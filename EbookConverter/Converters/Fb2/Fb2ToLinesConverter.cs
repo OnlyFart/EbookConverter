@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using FB2Library;
 using FB2Library.Elements;
@@ -19,81 +20,94 @@ namespace EbookConverter.Converters.Fb2 {
 
         private static void PrepareBodies(FB2File file, List<ILine> lines) {
             foreach (var bodyItem in file.Bodies) {
-                AddTitle(bodyItem.Title, lines, string.Empty, 1);
+                if (bodyItem.Name == "notes") {
+                    AddTitle(bodyItem.Title, lines, string.Empty, 1);
+                }
+                
+                foreach (var sectionItem in bodyItem.Epigraphs) {
+                    PrepareTextItem(sectionItem, file, lines, bodyItem.Name, 1);
+                }
 
                 foreach (var sectionItem in bodyItem.Sections) {
-                    PrepareTextItem(sectionItem, file, lines, 1);
+                    PrepareTextItem(sectionItem, file, lines, bodyItem.Name, 1);
                 }
             }
         }
 
-        private static void PrepareTextItems(IEnumerable<IFb2TextItem> textItems, FB2File file, List<ILine> lines, int headerLevel) {
+        private static void PrepareTextItems(IEnumerable<IFb2TextItem> textItems, FB2File file, List<ILine> lines, string bodyName, int headerLevel) {
             foreach (var textItem in textItems) {
                 if (textItem is IFb2TextItem) {
-                    PrepareTextItem(textItem, file, lines, headerLevel);
+                    PrepareTextItem(textItem, file, lines, bodyName, headerLevel);
                 } else {
                     AddTextLine(textItem.ToString(), lines);
                 }
             }
         }
 
-        private static void PrepareTextItem(IFb2TextItem textItem, FB2File file, List<ILine> lines, int headerLevel) {
+        private static void PrepareTextItem(IFb2TextItem textItem, FB2File file, List<ILine> lines, string bodyName, int headerLevel) {
             switch (textItem) {
                 case CiteItem item:
-                    PrepareTextItems(item.CiteData, file, lines, headerLevel);
+                    var cite = new Epigraph();
+                    
+                    PrepareTextItems(item.CiteData, file, cite.Texts, bodyName, headerLevel);
+                    PrepareTextItems(item.TextAuthors, file, cite.Authors, bodyName, headerLevel);
+                    
+                    lines.Add(cite);
                     return;
                 case PoemItem poemItem: {
-                    var item = poemItem;
-                    AddTitle(item.Title, lines, item.ID, headerLevel);
-                    PrepareTextItems(item.Content, file, lines, headerLevel + 1);
+                    AddTitle(poemItem.Title, lines, poemItem.ID, headerLevel);
+                    PrepareTextItems(poemItem.Content, file, lines, bodyName, headerLevel + 1);
                     return;
                 }
                 case SectionItem sectionItem: {
-                    var item = sectionItem;
-                    AddTitle(item.Title, lines, item.ID, headerLevel);
-                    PrepareTextItems(item.Content, file, lines, headerLevel + 1);
-                    return;
-                }
-                case StanzaItem stanzaItem: {
-                    var item = stanzaItem;
-                    AddTitle(item.Title, lines, string.Empty, headerLevel);
-                    PrepareTextItems(item.Lines, file, lines, headerLevel + 1);
-                    return;
-                }
-                case ParagraphItem _:
-                case EmptyLineItem _:
-                case TitleItem _:
-                case SimpleText _: {
-                    if (textItem is SubTitleItem) {
-                        lines.Add(new SubTitle {Text = textItem.ToString()});
-                    } else if (textItem is ParagraphItem) {
-                        var sb = new StringBuilder();
-
-                        foreach (var paragraphData in ((ParagraphItem) textItem).ParagraphData) {
-                            if (paragraphData is SimpleText) {
-                                sb.Append(paragraphData);
-                            } else if (paragraphData is InternalLinkItem) {
-                                var link = (InternalLinkItem) paragraphData;
-                                sb.Append($"<a href=\"{link.HRef}\" type=\"{link.Type}\">{link.LinkText}</a>");
-                            } else {
-                                sb.Append(paragraphData);
-                            }
-                        }
-
-                        AddTextLine(sb.ToString(), lines);
+                    if (bodyName == "notes") {
+                        var note = new NoteLine{Id = sectionItem.ID};
+                        
+                        AddTitle(sectionItem.Title, note.Titles, sectionItem.ID, headerLevel);
+                        PrepareTextItems(sectionItem.Content, file, note.Texts, bodyName, headerLevel);
+                    
+                        lines.Add(note);
                     } else {
-                        AddTextLine(textItem.ToString(), lines);
+                        AddTitle(sectionItem.Title, lines, sectionItem.ID, headerLevel);
+                        PrepareTextItems(sectionItem.Content, file, lines, bodyName, headerLevel + 1);
                     }
 
                     return;
                 }
+                case StanzaItem stanzaItem: {
+                    AddTitle(stanzaItem.Title, lines, string.Empty, headerLevel);
+                    PrepareTextItems(stanzaItem.Lines, file, lines, bodyName, headerLevel + 1);
+                    return;
+                }
+                case SimpleText text: {
+                    AddTextLine(text.ToHtml(), lines);
+                    break;
+                }
+                case EmptyLineItem empty: {
+                    AddTextLine(empty.ToString(), lines);
+                    break;
+                }
+                case TitleItem title: {
+                    AddTitle(title, lines, string.Empty, headerLevel + 1);
+                    break;
+                }
+                case SubTitleItem _:
+                case ParagraphItem _: {
+                    var sb = new StringBuilder();
+                    foreach (var paragraphData in ((ParagraphItem)textItem).ParagraphData) {
+                        sb.Append(paragraphData.ToHtml());
+                    }
+
+                    AddTextLine(sb.ToString(), lines);
+
+                    return;
+                }
                 case ImageItem imageItem: {
-                    var item = imageItem;
-                    var key = item.HRef.Replace("#", string.Empty);
+                    var key = imageItem.HRef.Replace("#", string.Empty);
 
                     if (file.Images.ContainsKey(key)) {
                         var data = file.Images[key].BinaryData;
-                        lines.Add(new ImageLine {Data = data, Key = key});
+                        lines.Add(new ImageLine {Data = data, Key = key, Id = imageItem.ID});
                     }
 
                     return;
@@ -102,8 +116,12 @@ namespace EbookConverter.Converters.Fb2 {
                     AddTextLine(item.DateValue.ToString(), lines);
                     return;
                 case EpigraphItem epigraphItem: {
-                    var item = epigraphItem;
-                    PrepareTextItems(item.EpigraphData, file, lines, headerLevel);
+                    var epigraf = new Epigraph();
+                    
+                    PrepareTextItems(epigraphItem.EpigraphData, file, epigraf.Texts, bodyName, headerLevel);
+                    PrepareTextItems(epigraphItem.TextAuthors, file, epigraf.Authors, bodyName, headerLevel);
+                    
+                    lines.Add(epigraf);
                     return;
                 }
                 default:

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -18,12 +19,11 @@ namespace EbookConverter.Converters.Fb2 {
         }
 
         private string CreateCover(FB2File file, string directoryPath) {
-            var (key, value) = file.Images.FirstOrDefault(i => i.Key.Contains("cover"));
+            var (key, _) = file.Images.FirstOrDefault(i => i.Key.Contains("cover"));
             if (key == null) {
                 return string.Empty;
             }
-
-            File.WriteAllBytes(Path.Combine(directoryPath, key), value.BinaryData);
+            
             var coverPattern = File.ReadAllText(_htmlPatternsConfig.CoverPath).Replace("{cover}", key);
             
             var covertPath = Path.Combine(directoryPath, "cover.html");
@@ -32,32 +32,19 @@ namespace EbookConverter.Converters.Fb2 {
 
         }
 
+        private static void SaveImages(FB2File file, string directoryPath) {
+            foreach (var (key, value) in file.Images) {
+                File.WriteAllBytes(Path.Combine(directoryPath, key), value.BinaryData);
+            }
+        }
+
         private string CreateContent(FB2File file, string directoryPath) {
             var sections = Fb2ToLinesConverter.Convert(file);
             var sb = new StringBuilder();
             var pattern = File.ReadAllText(_htmlPatternsConfig.ContentPath);
+            pattern = pattern.Replace("{title}", file.TitleInfo.BookTitle.ToString());
             foreach (var line in sections) {
-                switch (line) {
-                    case HeaderLine header: {
-                        if (header.HeaderLevel == 1) {
-                            pattern = pattern.Replace("{title}", header.ToString());
-                        }
-
-                        sb.AppendLine($"<h{header.HeaderLevel} id=\"{header.Id}\">{header}</h{header.HeaderLevel}>");
-                        break;
-                    }
-                    case SubTitle _:
-                        sb.AppendLine($"<h3>{line}</h3>");
-                        break;
-                    case TextLine _:
-                        sb.AppendLine($"<p>{line}</p>");
-                        break;
-                    case ImageLine image: {
-                        File.WriteAllBytes(Path.Combine(directoryPath, image.Key), image.Data);
-                        sb.AppendLine($"<div style=\"text-align: center\"><img alt=\"{image.Key}\" src=\"{image.Key}\" /></div>");
-                        break;
-                    }
-                }
+                sb.AppendLine(line.ToString());
             }
 
             var contentPath = Path.Combine(directoryPath, "content.html");
@@ -66,17 +53,16 @@ namespace EbookConverter.Converters.Fb2 {
             return contentPath;
         }
 
-        public override bool Convert(string sourcePath, string destinationPath, string wkArgs) {
+        protected override bool ConvertInternal(string tempPath, string sourcePath, string destinationPath, string wkArgs) {
             var file = new FB2Reader().ReadAsync(File.ReadAllText(sourcePath)).Result;
-            var directoryPath = GetTemporaryDirectory();
             
-            var coverPath = CreateCover(file, directoryPath);
-            var contentPath = CreateContent(file, directoryPath);
+            var coverPath = CreateCover(file, tempPath);
+            var contentPath = CreateContent(file, tempPath);
+
+            SaveImages(file, tempPath);
             
             var generatePdf = GeneratePdf(coverPath, contentPath, destinationPath, wkArgs);
-            
-            Directory.Delete(directoryPath, true);
-            
+
             return generatePdf;
         }
     }

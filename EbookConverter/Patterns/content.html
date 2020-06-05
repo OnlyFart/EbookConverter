@@ -5,9 +5,18 @@
 <head>
     <title>{title}</title>
     <style>
+        body {
+            line-height: 1.3em;
+            font-size: 1.1em;
+        }
+        
         p {
             text-indent: 1.5em;
             text-align: justify;
+        }
+        
+        a {
+            word-break: break-all;
         }
         
         h1, p + h2 {
@@ -17,6 +26,30 @@
         
         h1, h2, h3 {
             text-align: center;
+        }
+        
+        sup, sub {
+            font-size: 0.7em;
+        }
+        
+        blockquote {
+            position: relative;
+            padding: 16px 24px;
+            margin: 16px 16px 26px 16px;
+            border-top: 2px solid #337AB7;
+            border-bottom: 2px solid #337AB7;
+            page-break-inside: avoid
+        }
+        
+        blockquote cite {
+            color: #337AB7;
+            font-size: 15px;
+            padding-top: 20px;
+            display: block;
+        }
+        
+        img {
+            max-width: 100%;
         }
     </style>
 </head>

@@ -12,8 +12,17 @@ namespace EbookConverter.Converters {
         /// <param name="path">Путь к файлу</param>
         /// <returns></returns>
         public abstract bool IsSupport(string path);
-        
-        public abstract bool Convert(string sourcePath, string destinationPath, string wkArgs);
+
+        protected abstract bool ConvertInternal(string tempPath, string sourcePath, string destinationPath, string wkArgs);
+
+        public bool Convert(string sourcePath, string destinationPath, string wkArgs) {
+            var tempPath = GetTemporaryDirectory();
+            try {
+                return ConvertInternal(tempPath, sourcePath, destinationPath, wkArgs);
+            } finally {
+                Directory.Delete(tempPath, true);
+            } 
+        }
         
         protected static string GetTemporaryDirectory() {
             var tempDirectory = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());

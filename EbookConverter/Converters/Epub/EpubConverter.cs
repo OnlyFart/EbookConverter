@@ -10,9 +10,8 @@ namespace EbookConverter.Converters.Epub {
             return !string.IsNullOrWhiteSpace(path) && path.EndsWith(".epub", StringComparison.InvariantCultureIgnoreCase);
         }
 
-        public override bool Convert(string sourcePath, string destinationPath, string wkArgs) {
-            var temp = GetTemporaryDirectory();
-            ZipFile.ExtractToDirectory(sourcePath, temp, true);
+        protected override bool ConvertInternal(string tempPath, string sourcePath, string destinationPath, string wkArgs) {
+            ZipFile.ExtractToDirectory(sourcePath, tempPath, true);
             var readBook = EpubReader.ReadBook(sourcePath);
             
             if (readBook.ReadingOrder.Count == 0) {
@@ -21,17 +20,13 @@ namespace EbookConverter.Converters.Epub {
             
             var parts = readBook.ReadingOrder
                 .Where(t => !string.Equals(Path.GetFileName(t.FileName), "TOC.xhtml", StringComparison.InvariantCultureIgnoreCase))
-                .Select(t => "\"" + Path.Combine(temp, readBook.Schema.ContentDirectoryPath, t.FileName) + "\"").ToList();
+                .Select(t => "\"" + Path.Combine(tempPath, readBook.Schema.ContentDirectoryPath, t.FileName) + "\"").ToList();
 
             if (parts.Count == 0) {
                 return false;
             }
 
-            var generatePdf = GeneratePdf(parts[0], parts.Skip(1).ToList(), destinationPath, wkArgs);
-            
-            Directory.Delete(temp, true);
-            
-            return generatePdf;
+            return GeneratePdf(parts[0], parts.Skip(1).ToList(), destinationPath, wkArgs);
         }
     }
 }
