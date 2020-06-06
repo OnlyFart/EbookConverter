@@ -2,7 +2,7 @@ using System;
 using FB2Library.Elements;
 
 namespace EbookConverter.Converters.Fb2 {
-    public static class Extensions {
+    public static class Fb2Extensions {
         public static string ToHtml(this StyleType item) {
             switch (item) {
                 case SimpleText text:

@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -10,21 +9,28 @@ namespace EbookConverter.Converters.Fb2 {
     public class Fb2Converter : ConverterBase {
         private readonly HtmlPatternsConfig _htmlPatternsConfig;
 
-        public Fb2Converter(HtmlPatternsConfig htmlPatternsConfig) {
+        public Fb2Converter(HtmlPatternsConfig htmlPatternsConfig) : base(".fb2") {
             _htmlPatternsConfig = htmlPatternsConfig;
         }
         
-        public override bool IsSupport(string path) {
-            return !string.IsNullOrWhiteSpace(path) && path.EndsWith(".fb2", StringComparison.InvariantCultureIgnoreCase);
-        }
-
         private string CreateCover(FB2File file, string directoryPath) {
-            var (key, _) = file.Images.FirstOrDefault(i => i.Key.Contains("cover"));
-            if (key == null) {
-                return string.Empty;
-            }
+            var coverImagePath = string.Empty;
             
-            var coverPattern = File.ReadAllText(_htmlPatternsConfig.CoverPath).Replace("{cover}", key);
+            var coverImage = file.TitleInfo.Cover.CoverpageImages.FirstOrDefault();
+            if (coverImage != null) {
+                coverImagePath = coverImage.HRef.Replace("#", string.Empty);
+            }
+
+            if (string.IsNullOrEmpty(coverImagePath)) {
+                var (key, _) = file.Images.FirstOrDefault(i => i.Key.Contains("cover"));
+                if (key == null) {
+                    return string.Empty;
+                }
+
+                coverImagePath = key;
+            }
+
+            var coverPattern = File.ReadAllText(_htmlPatternsConfig.CoverPath).Replace("{cover}", coverImagePath);
             
             var covertPath = Path.Combine(directoryPath, "cover.html");
             File.WriteAllText(covertPath, coverPattern, Encoding.UTF8);
@@ -44,7 +50,7 @@ namespace EbookConverter.Converters.Fb2 {
             var pattern = File.ReadAllText(_htmlPatternsConfig.ContentPath);
             pattern = pattern.Replace("{title}", file.TitleInfo.BookTitle.ToString());
             foreach (var line in sections) {
-                sb.AppendLine(line.ToString());
+                sb.AppendLine(line.ToHtml());
             }
 
             var contentPath = Path.Combine(directoryPath, "content.html");

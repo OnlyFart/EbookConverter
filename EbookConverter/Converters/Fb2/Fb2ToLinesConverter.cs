@@ -2,13 +2,14 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using EbookConverter.Converters.Fb2.Lines;
 using FB2Library;
 using FB2Library.Elements;
 using FB2Library.Elements.Poem;
 
 namespace EbookConverter.Converters.Fb2 {
-    public class Fb2ToLinesConverter {
-        public static List<ILine> Convert(FB2File file) {
+    public static class Fb2ToLinesConverter {
+        public static IEnumerable<ILine> Convert(FB2File file) {
             var result = new List<ILine>();
             
             if (file.MainBody != null) {
@@ -46,11 +47,11 @@ namespace EbookConverter.Converters.Fb2 {
 
         private static void PrepareTextItem(IFb2TextItem textItem, FB2File file, List<ILine> lines, string bodyName, int headerLevel) {
             switch (textItem) {
-                case CiteItem item:
+                case CiteItem citeItem:
                     var cite = new Epigraph();
                     
-                    PrepareTextItems(item.CiteData, file, cite.Texts, bodyName, headerLevel);
-                    PrepareTextItems(item.TextAuthors, file, cite.Authors, bodyName, headerLevel);
+                    PrepareTextItems(citeItem.CiteData, file, cite.Texts, bodyName, headerLevel);
+                    PrepareTextItems(citeItem.TextAuthors, file, cite.Authors, bodyName, headerLevel);
                     
                     lines.Add(cite);
                     return;
@@ -69,6 +70,7 @@ namespace EbookConverter.Converters.Fb2 {
                         lines.Add(note);
                     } else {
                         AddTitle(sectionItem.Title, lines, sectionItem.ID, headerLevel);
+                        PrepareTextItems(sectionItem.Epigraphs, file, lines, bodyName, headerLevel + 1);
                         PrepareTextItems(sectionItem.Content, file, lines, bodyName, headerLevel + 1);
                     }
 
@@ -105,9 +107,8 @@ namespace EbookConverter.Converters.Fb2 {
                 case ImageItem imageItem: {
                     var key = imageItem.HRef.Replace("#", string.Empty);
 
-                    if (file.Images.ContainsKey(key)) {
-                        var data = file.Images[key].BinaryData;
-                        lines.Add(new ImageLine {Data = data, Key = key, Id = imageItem.ID});
+                    if (file.Images.TryGetValue(key, out var image)) {
+                        lines.Add(new ImageLine {Data = image.BinaryData, Key = key, Id = imageItem.ID});
                     }
 
                     return;
@@ -116,12 +117,12 @@ namespace EbookConverter.Converters.Fb2 {
                     AddTextLine(item.DateValue.ToString(), lines);
                     return;
                 case EpigraphItem epigraphItem: {
-                    var epigraf = new Epigraph();
+                    var epigraph = new Epigraph();
                     
-                    PrepareTextItems(epigraphItem.EpigraphData, file, epigraf.Texts, bodyName, headerLevel);
-                    PrepareTextItems(epigraphItem.TextAuthors, file, epigraf.Authors, bodyName, headerLevel);
+                    PrepareTextItems(epigraphItem.EpigraphData, file, epigraph.Texts, bodyName, headerLevel);
+                    PrepareTextItems(epigraphItem.TextAuthors, file, epigraph.Authors, bodyName, headerLevel);
                     
-                    lines.Add(epigraf);
+                    lines.Add(epigraph);
                     return;
                 }
                 default:
@@ -131,9 +132,7 @@ namespace EbookConverter.Converters.Fb2 {
 
         private static void AddTitle(TitleItem titleItem, List<ILine> lines, string id, int level) {
             if (titleItem != null) {
-                foreach (var title in titleItem.TitleData) {
-                    lines.Add(new HeaderLine {Text = title.ToString(), Id = id, HeaderLevel = level});
-                }
+                lines.AddRange(titleItem.TitleData.Select(title => new HeaderLine {Text = title.ToString(), Id = id, HeaderLevel = level}).Cast<ILine>());
             }
         }
 

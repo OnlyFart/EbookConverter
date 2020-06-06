@@ -6,10 +6,8 @@ using VersOne.Epub;
 
 namespace EbookConverter.Converters.Epub {
     public class EpubConverter : ConverterBase {
-        public override bool IsSupport(string path) {
-            return !string.IsNullOrWhiteSpace(path) && path.EndsWith(".epub", StringComparison.InvariantCultureIgnoreCase);
-        }
-
+        public EpubConverter() : base(".epub") { }
+        
         protected override bool ConvertInternal(string tempPath, string sourcePath, string destinationPath, string wkArgs) {
             ZipFile.ExtractToDirectory(sourcePath, tempPath, true);
             var readBook = EpubReader.ReadBook(sourcePath);

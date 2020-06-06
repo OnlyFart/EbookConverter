@@ -6,12 +6,20 @@ using System.Runtime.InteropServices;
 
 namespace EbookConverter.Converters {
     public abstract class ConverterBase {
+        private readonly string _extension;
+
+        protected ConverterBase(string extension) {
+            _extension = extension;
+        }
+
         /// <summary>
         /// Проверка на поддержку файла данным экстрактором
         /// </summary>
         /// <param name="path">Путь к файлу</param>
         /// <returns></returns>
-        public abstract bool IsSupport(string path);
+        public bool IsSupport(string path) {
+            return !string.IsNullOrWhiteSpace(path) && string.Equals(Path.GetExtension(path), _extension, StringComparison.InvariantCultureIgnoreCase);
+        }
 
         protected abstract bool ConvertInternal(string tempPath, string sourcePath, string destinationPath, string wkArgs);
 
@@ -23,8 +31,8 @@ namespace EbookConverter.Converters {
                 Directory.Delete(tempPath, true);
             } 
         }
-        
-        protected static string GetTemporaryDirectory() {
+
+        private static string GetTemporaryDirectory() {
             var tempDirectory = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
             Directory.CreateDirectory(tempDirectory);
             return tempDirectory;
