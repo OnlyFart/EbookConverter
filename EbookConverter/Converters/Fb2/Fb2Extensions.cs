@@ -1,34 +1,41 @@
 using System;
+using EbookConverter.Converters.Fb2.Lines;
 using FB2Library.Elements;
 
 namespace EbookConverter.Converters.Fb2 {
     public static class Fb2Extensions {
-        public static string ToHtml(this StyleType item) {
-            switch (item) {
-                case SimpleText text:
-                    return text.ToHtml();
-                case InternalLinkItem link:
-                    return link.ToHtml();
-
-                case InlineImageItem image:
-                    return image.ToHtml();
-
-                default:
-                    return item.ToString();
-            }
+        public static TextLine ToTextLine(this string text) {
+            return new TextLine {Text = text};
+        }
+        
+        public static HeaderLine ToHeaderLine(this IFb2TextItem item, string id, int level) {
+            return new HeaderLine {Text = item.ToString(), Id = id, HeaderLevel = level};
         }
 
-        public static string ToHtml(this InlineImageItem image) {
+        public static ImageLine ToImageLine(this BinaryItem item, string key, string id) {
+            return new ImageLine {Data = item.BinaryData, Key = key, Id = id};
+        }
+        
+        public static string ToHtml(this StyleType item) {
+            return item switch {
+                SimpleText text => text.ToHtml(),
+                InternalLinkItem link => link.ToHtml(),
+                InlineImageItem image => image.ToHtml(),
+                _ => item.ToString()
+            };
+        }
+
+        private static string ToHtml(this InlineImageItem image) {
             var key = image.HRef.Replace("#", string.Empty);
             return $"<img alt=\"{key}\" src=\"{key}\" />";
         }
-        
-        public static string ToHtml(this InternalLinkItem link) {
+
+        private static string ToHtml(this InternalLinkItem link) {
             if (link.Type == "note") {
                 return $"<sup><a href=\"{link.HRef}\" type=\"{link.Type}\" id=\"{link.HRef.Trim('#')}_backlink\">{link.LinkText.ToHtml()}</a></sup>";
-            } else {
-                return $"<a href=\"{link.HRef}\" type=\"{link.Type}\">{link.LinkText.ToHtml()}</a>";
             }
+
+            return $"<a href=\"{link.HRef}\" type=\"{link.Type}\">{ToHtml((StyleType) link.LinkText)}</a>";
         }
         
         public static string ToHtml(this SimpleText text) {
@@ -37,38 +44,27 @@ namespace EbookConverter.Converters.Fb2 {
             }
 
             foreach (var child in text.Children) {
-                switch (child) {
-                    case SimpleText simple:
-                        return ToHtml(simple);
-                    case InternalLinkItem link:
-                        return ToHtml(link.LinkText);
-                    default:
-                        return child.ToString();
-                }
+                return child switch {
+                    SimpleText simple => ToHtml(simple),
+                    InternalLinkItem link => ToHtml(link.LinkText),
+                    _ => child.ToString()
+                };
             }
 
             return string.Empty;
         }
 
         private static string GetHtmlTextPattern(TextStyles style) {
-            switch (style) {
-                case TextStyles.Normal:
-                    return "{0}";
-                case TextStyles.Strong:
-                    return "<strong>{0}</strong>";
-                case TextStyles.Emphasis:
-                    return "<i>{0}</i>";
-                case TextStyles.Code:
-                    return "<pre>{0}</pre>";
-                case TextStyles.Sub:
-                    return "<sub>{0}</sub>";
-                case TextStyles.Sup:
-                    return "<sup>{0}</sup>";
-                case TextStyles.Strikethrough:
-                    return "<strike>{0}</strike>";
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(style), style, null);
-            }
+            return style switch {
+                TextStyles.Normal => "{0}",
+                TextStyles.Strong => "<strong>{0}</strong>",
+                TextStyles.Emphasis => "<i>{0}</i>",
+                TextStyles.Code => "<pre>{0}</pre>",
+                TextStyles.Sub => "<sub>{0}</sub>",
+                TextStyles.Sup => "<sup>{0}</sup>",
+                TextStyles.Strikethrough => "<strike>{0}</strike>",
+                _ => throw new ArgumentOutOfRangeException(nameof(style), style, null)
+            };
         }
     }
 }

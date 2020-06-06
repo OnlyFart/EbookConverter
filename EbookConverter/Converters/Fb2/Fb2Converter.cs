@@ -1,4 +1,3 @@
-using System;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -7,9 +6,11 @@ using FB2Library;
 
 namespace EbookConverter.Converters.Fb2 {
     public class Fb2Converter : ConverterBase {
+        private readonly IFB2Reader _reader;
         private readonly HtmlPatternsConfig _htmlPatternsConfig;
 
-        public Fb2Converter(HtmlPatternsConfig htmlPatternsConfig) : base(".fb2") {
+        public Fb2Converter(IFB2Reader reader, HtmlPatternsConfig htmlPatternsConfig) : base(".fb2") {
+            _reader = reader;
             _htmlPatternsConfig = htmlPatternsConfig;
         }
         
@@ -30,10 +31,8 @@ namespace EbookConverter.Converters.Fb2 {
                 coverImagePath = key;
             }
 
-            var coverPattern = File.ReadAllText(_htmlPatternsConfig.CoverPath).Replace("{cover}", coverImagePath);
-            
             var covertPath = Path.Combine(directoryPath, "cover.html");
-            File.WriteAllText(covertPath, coverPattern, Encoding.UTF8);
+            File.WriteAllText(covertPath, File.ReadAllText(_htmlPatternsConfig.CoverPath).Replace("{cover}", coverImagePath), Encoding.UTF8);
             return covertPath;
 
         }
@@ -45,31 +44,27 @@ namespace EbookConverter.Converters.Fb2 {
         }
 
         private string CreateContent(FB2File file, string directoryPath) {
-            var sections = Fb2ToLinesConverter.Convert(file);
             var sb = new StringBuilder();
-            var pattern = File.ReadAllText(_htmlPatternsConfig.ContentPath);
-            pattern = pattern.Replace("{title}", file.TitleInfo.BookTitle.ToString());
-            foreach (var line in sections) {
+            foreach (var line in Fb2ToLinesConverter.Convert(file)) {
                 sb.AppendLine(line.ToHtml());
             }
-
+            
+            var pattern = File.ReadAllText(_htmlPatternsConfig.ContentPath).Replace("{title}", file.TitleInfo.BookTitle.ToString());
             var contentPath = Path.Combine(directoryPath, "content.html");
             File.WriteAllText(contentPath, pattern.Replace("{content}", sb.ToString()), Encoding.UTF8);
 
             return contentPath;
         }
 
-        protected override bool ConvertInternal(string tempPath, string sourcePath, string destinationPath, string wkArgs) {
-            var file = new FB2Reader().ReadAsync(File.ReadAllText(sourcePath)).Result;
+        protected override bool ConvertInternal(string temp, string source, string destination, string wkArgs) {
+            var file = _reader.ReadAsync(File.ReadAllText(source)).Result;
             
-            var coverPath = CreateCover(file, tempPath);
-            var contentPath = CreateContent(file, tempPath);
+            var coverPath = CreateCover(file, temp);
+            var contentPath = CreateContent(file, temp);
 
-            SaveImages(file, tempPath);
-            
-            var generatePdf = GeneratePdf(coverPath, contentPath, destinationPath, wkArgs);
+            SaveImages(file, temp);
 
-            return generatePdf;
+            return GeneratePdf(coverPath, contentPath, destination, wkArgs);
         }
     }
 }

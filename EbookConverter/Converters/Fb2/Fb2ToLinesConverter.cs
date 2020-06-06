@@ -8,31 +8,35 @@ using FB2Library.Elements;
 using FB2Library.Elements.Poem;
 
 namespace EbookConverter.Converters.Fb2 {
+    /// <summary>
+    /// Конвертер вложенной структуры fb2 файла в плоский список
+    /// </summary>
     public static class Fb2ToLinesConverter {
+        /// <summary>
+        /// Конвертация файла fb2 в плоский список
+        /// </summary>
+        /// <param name="file"></param>
+        /// <returns></returns>
         public static IEnumerable<ILine> Convert(FB2File file) {
-            var result = new List<ILine>();
+            var lines = new List<ILine>();
             
             if (file.MainBody != null) {
-                PrepareBodies(file, result);
-            }
-
-            return result;
-        }
-
-        private static void PrepareBodies(FB2File file, List<ILine> lines) {
-            foreach (var bodyItem in file.Bodies) {
-                if (bodyItem.Name == "notes") {
-                    AddTitle(bodyItem.Title, lines, string.Empty, 1);
-                }
+                foreach (var bodyItem in file.Bodies) {
+                    if (bodyItem.Name == "notes") {
+                        AddTitle(bodyItem.Title, lines, string.Empty, 1);
+                    }
                 
-                foreach (var sectionItem in bodyItem.Epigraphs) {
-                    PrepareTextItem(sectionItem, file, lines, bodyItem.Name, 1);
-                }
+                    foreach (var sectionItem in bodyItem.Epigraphs) {
+                        PrepareTextItem(sectionItem, file, lines, bodyItem.Name, 1);
+                    }
 
-                foreach (var sectionItem in bodyItem.Sections) {
-                    PrepareTextItem(sectionItem, file, lines, bodyItem.Name, 1);
+                    foreach (var sectionItem in bodyItem.Sections) {
+                        PrepareTextItem(sectionItem, file, lines, bodyItem.Name, 1);
+                    }
                 }
             }
+
+            return lines;
         }
 
         private static void PrepareTextItems(IEnumerable<IFb2TextItem> textItems, FB2File file, List<ILine> lines, string bodyName, int headerLevel) {
@@ -40,7 +44,7 @@ namespace EbookConverter.Converters.Fb2 {
                 if (textItem is IFb2TextItem) {
                     PrepareTextItem(textItem, file, lines, bodyName, headerLevel);
                 } else {
-                    AddTextLine(textItem.ToString(), lines);
+                    lines.Add(textItem.ToString().ToTextLine());
                 }
             }
         }
@@ -57,6 +61,7 @@ namespace EbookConverter.Converters.Fb2 {
                     return;
                 case PoemItem poemItem: {
                     AddTitle(poemItem.Title, lines, poemItem.ID, headerLevel);
+                    PrepareTextItems(poemItem.Epigraphs, file, lines, bodyName, headerLevel + 1);
                     PrepareTextItems(poemItem.Content, file, lines, bodyName, headerLevel + 1);
                     return;
                 }
@@ -82,11 +87,11 @@ namespace EbookConverter.Converters.Fb2 {
                     return;
                 }
                 case SimpleText text: {
-                    AddTextLine(text.ToHtml(), lines);
+                    lines.Add(text.ToHtml().ToTextLine());
                     break;
                 }
                 case EmptyLineItem empty: {
-                    AddTextLine(empty.ToString(), lines);
+                    lines.Add(empty.ToString().ToTextLine());
                     break;
                 }
                 case TitleItem title: {
@@ -100,7 +105,7 @@ namespace EbookConverter.Converters.Fb2 {
                         sb.Append(paragraphData.ToHtml());
                     }
 
-                    AddTextLine(sb.ToString(), lines);
+                    lines.Add(sb.ToString().ToTextLine());
 
                     return;
                 }
@@ -108,13 +113,13 @@ namespace EbookConverter.Converters.Fb2 {
                     var key = imageItem.HRef.Replace("#", string.Empty);
 
                     if (file.Images.TryGetValue(key, out var image)) {
-                        lines.Add(new ImageLine {Data = image.BinaryData, Key = key, Id = imageItem.ID});
+                        lines.Add(image.ToImageLine(key, imageItem.ID));
                     }
 
                     return;
                 }
                 case DateItem item:
-                    AddTextLine(item.DateValue.ToString(), lines);
+                    lines.Add(item.DateValue.ToString().ToTextLine());
                     return;
                 case EpigraphItem epigraphItem: {
                     var epigraph = new Epigraph();
@@ -132,12 +137,8 @@ namespace EbookConverter.Converters.Fb2 {
 
         private static void AddTitle(TitleItem titleItem, List<ILine> lines, string id, int level) {
             if (titleItem != null) {
-                lines.AddRange(titleItem.TitleData.Select(title => new HeaderLine {Text = title.ToString(), Id = id, HeaderLevel = level}).Cast<ILine>());
+                lines.AddRange(titleItem.TitleData.Select(title => title.ToHeaderLine(id, level)));
             }
-        }
-
-        private static void AddTextLine(string text, List<ILine> lines) {
-            lines.Add(new TextLine {Text = text});
         }
     }
 }

@@ -2,6 +2,7 @@ using EbookConverter.Configs;
 using EbookConverter.Converters;
 using EbookConverter.Converters.Epub;
 using EbookConverter.Converters.Fb2;
+using FB2Library;
 using Microsoft.Extensions.Configuration;
 using Ninject.Modules;
 
@@ -15,9 +16,10 @@ namespace EbookConverter.IoC {
             var htmlPatternsConfig = config.GetSection("HtmlPatternsConfig").Get<HtmlPatternsConfig>();
 
             Bind<HtmlPatternsConfig>().ToConstant(htmlPatternsConfig);
-
-            Bind<ConverterBase>().To<EpubConverter>().InSingletonScope();
-            Bind<ConverterBase>().To<Fb2Converter>().InSingletonScope();
+            
+            Bind<IFB2Reader>().To<FB2Reader>();
+            Bind<ConverterBase>().To<EpubConverter>();
+            Bind<ConverterBase>().To<Fb2Converter>();
         }
     }
 }
