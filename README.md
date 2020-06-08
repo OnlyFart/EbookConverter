@@ -2,6 +2,7 @@
 Инструмент для конвертации fb2 и epub файлов в pdf
 
 Для работы под Windows никаких телодвижений делать не надо. Все рабоатет из коробки
+
 Для работы под Linux надо установить https://wkhtmltopdf.org/downloads.html#stable
 
 ebookconverter -s "d:\epub" -d "d:\epub", где -s - папка и исходными файлами, -d - результирующая папка с pdf
