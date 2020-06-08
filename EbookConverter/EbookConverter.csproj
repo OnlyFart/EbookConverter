@@ -9,7 +9,6 @@
 
     <ItemGroup>
       <PackageReference Include="CommandLineParser" Version="2.8.0" />
-      <PackageReference Include="Fb2.Document" Version="1.1.0" />
       <PackageReference Include="FB2Library" Version="1.3.0" />
       <PackageReference Include="Microsoft.Extensions.Configuration" Version="3.1.4" />
       <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="3.1.4" />
