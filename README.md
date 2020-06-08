@@ -21,4 +21,4 @@ ebookconverter --help
 1. Шаблон обложки https://github.com/OnlyFart/EbookConverter/blob/master/EbookConverter/Patterns/cover.html
 2. Шаблон основного контента https://github.com/OnlyFart/EbookConverter/blob/master/EbookConverter/Patterns/content.html
 
-Если качество полученных pdf не устраивает или есть необходимость поменять стили, то это модно сделать через вышеуказанные шаблоны
+Если качество полученных pdf не устраивает или есть необходимость поменять стили, то это можно сделать через вышеуказанные шаблоны
