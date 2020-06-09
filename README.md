@@ -1,6 +1,8 @@
 # EbookConverter
 Инструмент для конвертации fb2 и epub файлов в pdf
 
+Для работы необходим net.core 3.1 https://dotnet.microsoft.com/download/dotnet-core/3.1
+
 Для работы под Windows никаких телодвижений делать не надо. Все работает из коробки
 
 Для работы под Linux надо установить https://wkhtmltopdf.org/downloads.html#stable
