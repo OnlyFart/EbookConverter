@@ -1,0 +1,71 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
+        "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title>{title}</title>
+    <style>
+        body {
+            line-height: 1.3em;
+            font-size: 1.1em;
+        }
+        
+        p {
+            text-indent: 1.5em;
+            text-align: justify;
+        }
+        
+        a {
+            word-break: break-all;
+        }
+        
+        h1, p + h2 {
+            clear: both;
+            page-break-before: always;
+        }
+        
+        h1, h2, h3 {
+            text-align: center;
+            line-height: 2em;
+        }
+        
+        sup, sub {
+            font-size: 0.7em;
+        }
+        
+        blockquote {
+            position: relative;
+            padding: 5px 10px;
+            margin: 10px;
+            border-top: 1px solid #337AB7;
+            border-bottom: 1px solid #337AB7;
+            page-break-inside: avoid;
+            font-size: 1em;
+            font-style: italic;
+        }
+
+        blockquote + blockquote {
+            margin-top: 0;
+        }
+        
+        blockquote cite {
+            color: #337AB7;
+            font-size: 0.9em;
+            display: block;
+            text-align: right;
+        }
+
+        blockquote cite p {
+            text-align: right;
+        }
+        
+        img {
+            max-width: 100%;
+        }
+    </style>
+</head>
+
+<body>
+{content}
+</body>
+</html>
