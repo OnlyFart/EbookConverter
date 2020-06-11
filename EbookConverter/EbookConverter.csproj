@@ -17,7 +17,7 @@
       <PackageReference Include="VersOne.Epub" Version="3.0.3.1" />
     </ItemGroup>
 
-    <ItemGroup>
+    <ItemGroup Condition="'$(RuntimeIdentifier)' == 'win-x64'">
       <None Update="wkhtmltopdf\libwkhtmltox.a">
         <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       </None>
@@ -27,6 +27,8 @@
       <None Update="wkhtmltopdf\wkhtmltox.dll">
         <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       </None>
+    </ItemGroup>
+    <ItemGroup>
       <None Update="Patterns\cover.html">
         <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       </None>
