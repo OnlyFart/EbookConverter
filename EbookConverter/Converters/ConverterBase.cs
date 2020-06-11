@@ -88,7 +88,7 @@ namespace EbookConverter.Converters {
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) {
                 arguments = $"/c wkhtmltopdf {wkArgs} ";
             } else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux)) {
-                arguments = $"wkhtmltopdf {wkArgs} ";
+                arguments = $"-c wkhtmltopdf {wkArgs} ";
             }
 
 
