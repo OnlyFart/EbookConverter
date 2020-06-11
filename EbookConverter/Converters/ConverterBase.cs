@@ -84,7 +84,13 @@ namespace EbookConverter.Converters {
                 throw new Exception("No pages for convert");
             }
 
-            var arguments = $"/c wkhtmltopdf {wkArgs} ";
+            var arguments = string.Empty;
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) {
+                arguments = $"/c wkhtmltopdf {wkArgs} ";
+            } else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux)) {
+                arguments = $"wkhtmltopdf {wkArgs} ";
+            }
+
 
             if (!string.IsNullOrEmpty(cover)) {
                 arguments += $"cover \"{cover}\" ";
