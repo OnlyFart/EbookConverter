@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
+using EbookConverter.Extensions;
 
 namespace EbookConverter.Converters {
     /// <summary>
@@ -88,16 +89,16 @@ namespace EbookConverter.Converters {
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) {
                 arguments = $"/c wkhtmltopdf {wkArgs} ";
             } else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux)) {
-                arguments = $"-c wkhtmltopdf {wkArgs} ";
+                arguments = $"-c {wkArgs} ";
             }
 
 
             if (!string.IsNullOrEmpty(cover)) {
-                arguments += $"cover \"{cover}\" ";
+                arguments += $"cover {cover.CoverQuotes()} ";
             }
             
-            arguments += string.Join(" ", contents.Select(path => $"\"{path}\""));
-            arguments += " \"" + destination + "\"";
+            arguments += string.Join(" ", contents.Select(path => path.CoverQuotes()));
+            arguments += " " + destination.CoverQuotes();
             
             var info = new ProcessStartInfo();
 
@@ -113,7 +114,7 @@ namespace EbookConverter.Converters {
                 info = new ProcessStartInfo {
                     WindowStyle = ProcessWindowStyle.Hidden,
                     UseShellExecute = false,
-                    FileName = "/bin/bash",
+                    FileName = "wkhtmltopdf",
                     Arguments = arguments
                 };
             }
