@@ -1,4 +1,6 @@
 using System.Collections.Generic;
+using System.Linq;
+using EbookConverter.Extensions;
 
 namespace EbookConverter.Converters.Fb2.Lines {
     public class NoteLine : ILine {
@@ -7,17 +9,15 @@ namespace EbookConverter.Converters.Fb2.Lines {
         public string Id;
         
         public string ToHtml() {
-            var pattern = "<p id=\"{id}\"><strong><a href=\"#{id}_backlink\">[{title}]</strong></a> {text}</p>";
-            pattern = pattern.Replace("{id}", Id);
-            foreach (var title in Titles) {
-                pattern = pattern.Replace("{title}", ((HeaderLine) title).Text.Trim());
-            }
+            var pattern = "[{title}]"
+                .ToHtmlTag("a", "href", "#{id}_backlink")
+                .ToHtmlTag("strong")
+                .AppendThroughWhitespace("{text}")
+                .ToHtmlTag("p", "id", "{id}");
             
-            foreach (var title in Texts) {
-                pattern = pattern.Replace("{text}", ((TextLine) title).Text);
-            }
+            pattern = Titles.Aggregate(pattern.Replace("{id}", Id), (current, title) => current.Replace("{title}", ((HeaderLine) title).Text.Trim()));
 
-            return pattern;
+            return Texts.Aggregate(pattern, (current, title) => current.Replace("{text}", ((TextLine) title).Text));
         }
     }
 }

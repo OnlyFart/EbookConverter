@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 
 namespace EbookConverter.Extensions {
     public static class StringExtensions {
@@ -20,6 +21,16 @@ namespace EbookConverter.Extensions {
         /// <returns></returns>
         public static string AppendThroughWhitespace(this string str, string append) {
             return str + " " + append;
+        }
+        
+        /// <summary>
+        /// Добавить к <see cref="sb"/> строку <see cref="append"/> через пробел
+        /// </summary>
+        /// <param name="sb"></param>
+        /// <param name="append"></param>
+        /// <returns></returns>
+        public static StringBuilder AppendThroughWhitespace(this StringBuilder sb, string append) {
+            return sb.Append(" ").Append(append);
         }
         
         /// <summary>

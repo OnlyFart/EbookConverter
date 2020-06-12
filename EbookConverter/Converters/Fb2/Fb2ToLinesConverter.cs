@@ -109,7 +109,7 @@ namespace EbookConverter.Converters.Fb2 {
                     var key = imageItem.HRef.Replace("#", string.Empty);
 
                     if (file.Images.TryGetValue(key, out var image)) {
-                        lines.Add(image.ToImageLine(key, imageItem.ID));
+                        lines.Add(image.ToImageLine(imageItem.ID));
                     }
 
                     return;

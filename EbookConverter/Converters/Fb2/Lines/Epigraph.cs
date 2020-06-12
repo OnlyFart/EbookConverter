@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Text;
+using EbookConverter.Extensions;
 
 namespace EbookConverter.Converters.Fb2.Lines {
     public class Epigraph : ILine {
@@ -8,17 +9,14 @@ namespace EbookConverter.Converters.Fb2.Lines {
 
         public string ToHtml() {
             var sb = new StringBuilder();
-            sb.AppendLine("<blockquote>");
             foreach (var text in Texts) {
                 sb.AppendLine(text.ToHtml());
             }
 
             foreach (var text in Authors) {
-                sb.AppendLine("<cite>" + text.ToHtml() + "</cite>");
+                sb.AppendLine(text.ToHtml().ToHtmlTag("cite"));
             }
-
-            sb.AppendLine("</blockquote>");
-            return sb.ToString();
+            return sb.ToString().ToHtmlTag("blockquote");
         }
     }
 }

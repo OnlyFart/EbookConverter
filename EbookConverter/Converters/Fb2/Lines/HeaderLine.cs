@@ -1,3 +1,5 @@
+using EbookConverter.Extensions;
+
 namespace EbookConverter.Converters.Fb2.Lines {
     public class HeaderLine : ILine {
         public string Text;
@@ -5,7 +7,7 @@ namespace EbookConverter.Converters.Fb2.Lines {
         public string Id;
         
         public string ToHtml() {
-            return $"<h{HeaderLevel} id=\"{Id}\">{Text}</h{HeaderLevel}>";
+            return Text.ToHtmlTag($"h{HeaderLevel}", "id", Id);
         }
     }
 }
