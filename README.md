@@ -7,7 +7,7 @@
 
 Пример вызова сервиса
 ```
-ebookconverter -s "d:\epub" -d "d:\epub"
+ebookconverter -s "<source_folder>" -d "<destination_folder>"
 ```
 Где -s - папка и исходными файлами, -d - результирующая папка с pdf
 
