@@ -3,9 +3,7 @@
 
 Для работы необходим net.core 3.1 https://dotnet.microsoft.com/download/dotnet-core/3.1
 
-Для работы под Windows никаких телодвижений делать не надо. Все работает из коробки
-
-Для работы под Linux надо установить https://wkhtmltopdf.org/downloads.html#stable
+А так же утилита https://wkhtmltopdf.org/downloads.html#stable
 
 Пример вызова сервиса
 ```
