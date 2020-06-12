@@ -90,11 +90,12 @@ namespace EbookConverter.Converters {
             var arguments = (string.IsNullOrWhiteSpace(wkArgs) ? _config.DefaultArgs : wkArgs);
 
             if (!string.IsNullOrEmpty(cover)) {
-                arguments += $" cover {cover.CoverQuotes()} ";
+                arguments = arguments.AppendThroughWhitespace($"cover {cover.CoverQuotes()}");
             }
             
-            arguments += string.Join(" ", contents.Select(path => path.CoverQuotes()));
-            arguments += " " + destination.CoverQuotes();
+            arguments = arguments
+                .AppendThroughWhitespace(string.Join(" ", contents.Select(path => path.CoverQuotes())))
+                .AppendThroughWhitespace(destination.CoverQuotes());
 
             var info = new ProcessStartInfo {
                 WindowStyle = ProcessWindowStyle.Hidden,
