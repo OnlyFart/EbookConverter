@@ -85,13 +85,7 @@ namespace EbookConverter.Converters {
                 throw new Exception("No pages for convert");
             }
 
-            var arguments = string.Empty;
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) {
-                arguments = $"/c wkhtmltopdf {wkArgs} ";
-            } else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux)) {
-                arguments = $"-c {wkArgs} ";
-            }
-
+            var arguments = $"{wkArgs} ";
 
             if (!string.IsNullOrEmpty(cover)) {
                 arguments += $"cover {cover.CoverQuotes()} ";
@@ -99,25 +93,15 @@ namespace EbookConverter.Converters {
             
             arguments += string.Join(" ", contents.Select(path => path.CoverQuotes()));
             arguments += " " + destination.CoverQuotes();
-            
-            var info = new ProcessStartInfo();
 
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) {
-                info = new ProcessStartInfo {
-                    WorkingDirectory = "wkhtmltopdf",
-                    WindowStyle = ProcessWindowStyle.Hidden,
-                    UseShellExecute = false,
-                    FileName = "cmd.exe",
-                    Arguments = arguments
-                };
-            } else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux)) {
-                info = new ProcessStartInfo {
-                    WindowStyle = ProcessWindowStyle.Hidden,
-                    UseShellExecute = false,
-                    FileName = "wkhtmltopdf",
-                    Arguments = arguments
-                };
-            }
+            var info = new ProcessStartInfo {
+                WindowStyle = ProcessWindowStyle.Hidden,
+                UseShellExecute = false,
+                FileName = RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
+                    ? Path.Combine(Environment.CurrentDirectory, "wkhtmltopdf/wkhtmltopdf.exe")
+                    : "wkhtmltopdf",
+                Arguments = arguments
+            };
 
             using (var process = Process.Start(info)) {
                 if (process == null) {
