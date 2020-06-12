@@ -83,18 +83,20 @@ namespace EbookConverter.Converters {
         /// <param name="wkArgs">Аргументы для запуска wkhtmltopdf</param>
         /// <returns></returns>
         protected bool GeneratePdf(string cover, List<string> contents, string destination, string wkArgs) {
-            if (contents.Count == 0) {
+            if (contents.Count == 0 && string.IsNullOrWhiteSpace(cover)) {
                 throw new Exception("No pages for convert");
             }
 
-            var arguments = (string.IsNullOrWhiteSpace(wkArgs) ? _config.DefaultArgs : wkArgs);
+            var arguments = string.IsNullOrWhiteSpace(wkArgs) ? _config.DefaultArgs : wkArgs;
 
             if (!string.IsNullOrEmpty(cover)) {
-                arguments = arguments.AppendThroughWhitespace($"cover {cover.CoverQuotes()}");
+                arguments = arguments
+                    .AppendThroughWhitespace("cover")
+                    .AppendThroughWhitespace(cover.CoverQuotes());
             }
             
             arguments = arguments
-                .AppendThroughWhitespace(string.Join(" ", contents.Select(path => path.CoverQuotes())))
+                .AppendThroughWhitespace(contents.Select(path => path.CoverQuotes()))
                 .AppendThroughWhitespace(destination.CoverQuotes());
 
             var info = new ProcessStartInfo {
@@ -110,13 +112,8 @@ namespace EbookConverter.Converters {
                 }
 
                 process.WaitForExit();
-                if (process.ExitCode > 0) {
-                    return false;
-                }
-
+                return process.ExitCode == 0;
             }
-
-            return true;
         }
     }
 }
