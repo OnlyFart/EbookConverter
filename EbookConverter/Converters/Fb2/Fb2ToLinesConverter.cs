@@ -41,11 +41,7 @@ namespace EbookConverter.Converters.Fb2 {
 
         private static void PrepareTextItems(IEnumerable<IFb2TextItem> textItems, FB2File file, List<ILine> lines, string bodyName, int headerLevel) {
             foreach (var textItem in textItems) {
-                if (textItem is IFb2TextItem) {
-                    PrepareTextItem(textItem, file, lines, bodyName, headerLevel);
-                } else {
-                    lines.Add(textItem.ToString().ToTextLine());
-                }
+                PrepareTextItem(textItem, file, lines, bodyName, headerLevel);
             }
         }
 

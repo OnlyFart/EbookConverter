@@ -19,7 +19,7 @@
             word-break: break-all;
         }
         
-        h1, p + h2 {
+        h1, p + h2, div + h2, img + h2 {
             clear: both;
             page-break-before: always;
         }
@@ -27,8 +27,10 @@
         h1, h2, h3 {
             text-align: center;
             line-height: 2em;
+            page-break-inside: avoid;
+            page-break-after: avoid;
         }
-        
+
         sup, sub {
             font-size: 0.7em;
         }
