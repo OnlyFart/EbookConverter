@@ -39,36 +39,35 @@ namespace EbookConverter.Converters.Fb2 {
                     .ToHtmlTag("sup");
             }
 
-            return ToHtml((StyleType) link.LinkText).ToHtmlTag("a", "href", link.HRef, "type", link.Type);
+            return link.LinkText.ToHtml().ToHtmlTag("a", "href", link.HRef, "type", link.Type);
         }
         
         public static string ToHtml(this SimpleText text) {
             if (!text.HasChildren) {
-                return string.Format(GetHtmlTextPattern(text.Style), text.Text);
+                return ToHtml(text.Style, text.Text);
             }
 
             foreach (var child in text.Children) {
                 return child switch {
-                    SimpleText simple => ToHtml(simple),
-                    InternalLinkItem link => ToHtml(link.LinkText),
-                    _ => child.ToString()
+                    SimpleText simple => ToHtml(simple.Style, simple.ToHtml()),
+                    InternalLinkItem link => ToHtml(text.Style, link.ToHtml()),
+                    InlineImageItem image => ToHtml(text.Style, image.ToHtml()),
+                    _ => ToHtml(text.Style, child.ToString())
                 };
             }
 
             return string.Empty;
         }
 
-        private static string GetHtmlTextPattern(TextStyles style) {
-            const string PATTERN = "{0}";
-
+        private static string ToHtml(TextStyles style, string str) {
             return style switch {
-                TextStyles.Normal => PATTERN,
-                TextStyles.Strong => PATTERN.ToHtmlTag("strong"),
-                TextStyles.Emphasis => PATTERN.ToHtmlTag("i"),
-                TextStyles.Code => PATTERN.ToHtmlTag("pre"),
-                TextStyles.Sub => PATTERN.ToHtmlTag("sub"),
-                TextStyles.Sup => PATTERN.ToHtmlTag("sup"),
-                TextStyles.Strikethrough => PATTERN.ToHtmlTag("strike"),
+                TextStyles.Normal => str,
+                TextStyles.Strong => str.ToHtmlTag("strong"),
+                TextStyles.Emphasis => str.ToHtmlTag("i"),
+                TextStyles.Code => str.ToHtmlTag("pre"),
+                TextStyles.Sub => str.ToHtmlTag("sub"),
+                TextStyles.Sup => str.ToHtmlTag("sup"),
+                TextStyles.Strikethrough => str.ToHtmlTag("strike"),
                 _ => throw new ArgumentOutOfRangeException(nameof(style), style, null)
             };
         }
