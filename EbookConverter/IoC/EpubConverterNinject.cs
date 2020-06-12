@@ -13,9 +13,10 @@ namespace EbookConverter.IoC {
                 .AddJsonFile("appsettings.json", true, true)
                 .Build();
             
-            var htmlPatternsConfig = config.GetSection("HtmlPatternsConfig").Get<HtmlPatternsConfig>();
+            var htmlPatternsConfig = config.GetSection("GlobalConfig").Get<GlobalConfig>();
 
-            Bind<HtmlPatternsConfig>().ToConstant(htmlPatternsConfig);
+            Bind<HtmlPatternsConfig>().ToConstant(htmlPatternsConfig.HtmlPatternsConfig);
+            Bind<WkhtmltopdfConfig>().ToConstant(htmlPatternsConfig.WkhtmltopdfConfig);
             
             Bind<IFB2Reader>().To<FB2Reader>();
             Bind<ConverterBase>().To<EpubConverter>();

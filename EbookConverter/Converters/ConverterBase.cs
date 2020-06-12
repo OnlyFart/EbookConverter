@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Runtime.InteropServices;
+using EbookConverter.Configs;
 using EbookConverter.Extensions;
 
 namespace EbookConverter.Converters {
@@ -12,9 +12,11 @@ namespace EbookConverter.Converters {
     /// </summary>
     public abstract class ConverterBase {
         private readonly string _extension;
+        private readonly WkhtmltopdfConfig _config;
 
-        protected ConverterBase(string extension) {
+        protected ConverterBase(string extension, WkhtmltopdfConfig config) {
             _extension = extension;
+            _config = config;
         }
 
         /// <summary>
@@ -68,7 +70,7 @@ namespace EbookConverter.Converters {
         /// <param name="destination">Путь к сконверченному файлу</param>
         /// <param name="wkArgs">Аргументы для запуска wkhtmltopdf</param>
         /// <returns></returns>
-        protected static bool GeneratePdf(string cover, string content, string destination, string wkArgs) {
+        protected bool GeneratePdf(string cover, string content, string destination, string wkArgs) {
             return GeneratePdf(cover, new List<string> {content}, destination, wkArgs);
         }
         
@@ -80,15 +82,15 @@ namespace EbookConverter.Converters {
         /// <param name="destination">Путь к сконверченному файлу</param>
         /// <param name="wkArgs">Аргументы для запуска wkhtmltopdf</param>
         /// <returns></returns>
-        protected static bool GeneratePdf(string cover, List<string> contents, string destination, string wkArgs) {
+        protected bool GeneratePdf(string cover, List<string> contents, string destination, string wkArgs) {
             if (contents.Count == 0) {
                 throw new Exception("No pages for convert");
             }
 
-            var arguments = $"{wkArgs} ";
+            var arguments = (string.IsNullOrWhiteSpace(wkArgs) ? _config.DefaultArgs : wkArgs);
 
             if (!string.IsNullOrEmpty(cover)) {
-                arguments += $"cover {cover.CoverQuotes()} ";
+                arguments += $" cover {cover.CoverQuotes()} ";
             }
             
             arguments += string.Join(" ", contents.Select(path => path.CoverQuotes()));
@@ -97,9 +99,7 @@ namespace EbookConverter.Converters {
             var info = new ProcessStartInfo {
                 WindowStyle = ProcessWindowStyle.Hidden,
                 UseShellExecute = false,
-                FileName = RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
-                    ? Path.Combine(Environment.CurrentDirectory, "wkhtmltopdf/wkhtmltopdf.exe")
-                    : "wkhtmltopdf",
+                FileName = _config.Path,
                 Arguments = arguments
             };
 

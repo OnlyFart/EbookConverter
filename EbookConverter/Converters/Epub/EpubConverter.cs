@@ -2,11 +2,12 @@ using System;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
+using EbookConverter.Configs;
 using VersOne.Epub;
 
 namespace EbookConverter.Converters.Epub {
     public class EpubConverter : ConverterBase {
-        public EpubConverter() : base(".epub") { }
+        public EpubConverter(WkhtmltopdfConfig wkhtmltopdfConfig) : base(".epub", wkhtmltopdfConfig) { }
         
         protected override bool ConvertInternal(string temp, string source, string destination, string wkArgs) {
             ZipFile.ExtractToDirectory(source, temp, true);

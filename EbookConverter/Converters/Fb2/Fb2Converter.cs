@@ -9,7 +9,7 @@ namespace EbookConverter.Converters.Fb2 {
         private readonly IFB2Reader _reader;
         private readonly HtmlPatternsConfig _htmlPatternsConfig;
 
-        public Fb2Converter(IFB2Reader reader, HtmlPatternsConfig htmlPatternsConfig) : base(".fb2") {
+        public Fb2Converter(IFB2Reader reader, HtmlPatternsConfig htmlPatternsConfig, WkhtmltopdfConfig wkhtmltopdfConfig) : base(".fb2", wkhtmltopdfConfig) {
             _reader = reader;
             _htmlPatternsConfig = htmlPatternsConfig;
         }

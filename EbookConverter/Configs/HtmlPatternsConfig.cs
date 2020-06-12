@@ -1,7 +1,7 @@
 namespace EbookConverter.Configs {
     public class HtmlPatternsConfig {
         /// <summary>
-        /// Путь к шаьлону для обложки
+        /// Путь к шаблону для обложки
         /// </summary>
         public string CoverPath { get; set; }
         

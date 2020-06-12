@@ -15,18 +15,6 @@
       <PackageReference Include="Ninject" Version="3.3.4" />
       <PackageReference Include="VersOne.Epub" Version="3.0.3.1" />
     </ItemGroup>
-
-    <ItemGroup Condition="'$(RuntimeIdentifier)' == 'win-x64' OR ('$(OS)' == 'Windows_NT' AND '$(RuntimeIdentifier)' == '')">
-      <None Update="wkhtmltopdf\libwkhtmltox.a">
-        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-      </None>
-      <None Update="wkhtmltopdf\wkhtmltopdf.exe">
-        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-      </None>
-      <None Update="wkhtmltopdf\wkhtmltox.dll">
-        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-      </None>
-    </ItemGroup>
     <ItemGroup>
       <None Update="Patterns\cover.html">
         <CopyToOutputDirectory>Always</CopyToOutputDirectory>
