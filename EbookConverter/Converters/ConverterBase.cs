@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using EbookConverter.Configs;
 using EbookConverter.Extensions;
+using TempFolder;
 
 namespace EbookConverter.Converters {
     /// <summary>
@@ -46,22 +47,11 @@ namespace EbookConverter.Converters {
         /// <param name="wkArgs">Аргументы для запуска wkhtmltopdf</param>
         /// <returns></returns>
         public bool Convert(string source, string destination, string wkArgs) {
-            var tempPath = GetTemporaryDirectory();
-            try {
-                return ConvertInternal(tempPath, source, destination, wkArgs);
-            } finally {
-                Directory.Delete(tempPath, true);
-            } 
+            using (var temp = TempFolderFactory.Create()) {
+                return ConvertInternal(temp.Path, source, destination, wkArgs);
+            }
         }
-        
-        /// <summary>
-        /// Создание временной директории для хранения промежуточных данных
-        /// </summary>
-        /// <returns></returns>
-        private static string GetTemporaryDirectory() {
-            return Directory.CreateDirectory(Path.Combine(Path.GetTempPath(), Path.GetRandomFileName())).FullName;
-        }
-        
+
         /// <summary>
         /// Генерация pdf файла
         /// </summary>
