@@ -5,6 +5,7 @@ namespace EbookConverter.Converters.Fb2.Lines {
         public string Text;
         
         public string ToHtml() {
+            // Просто оборачиваем в тег p
             return Text.ToHtmlTag("p");
         }
     }
