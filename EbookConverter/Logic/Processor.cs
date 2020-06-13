@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using EbookConverter.Converters;
 
@@ -19,18 +20,16 @@ namespace EbookConverter.Logic {
         /// <param name="destination">Путь к сконверченному файлу</param>
         /// <param name="wkArgs">Аргументы для запуска wkhtmltopdf</param>
         private void ProcessFile(string source, string destination, string wkArgs) {
-            foreach (var converter in _converters) {
-                if (converter.IsSupport(source)) {
-                    try {
-                        Console.WriteLine($"Start convert {source} to {destination}");
-                        if (converter.Convert(source, destination, wkArgs)) {
-                            Console.WriteLine($"Success convert {source} to {destination}");
-                        } else {
-                            Console.WriteLine($"Fail convert {source} to {destination}");
-                        }
-                    } catch (Exception e) {
-                        Console.WriteLine($"Fail convert {source} to {destination}. Message {e.Message}");
+            foreach (var converter in _converters.Where(converter => converter.IsSupport(source))) {
+                try {
+                    Console.WriteLine($"Start convert {source} to {destination}");
+                    if (converter.Convert(source, destination, wkArgs)) {
+                        Console.WriteLine($"Success convert {source} to {destination}");
+                    } else {
+                        Console.WriteLine($"Fail convert {source} to {destination}");
                     }
+                } catch (Exception e) {
+                    Console.WriteLine($"Fail convert {source} to {destination}. Message {e.Message}");
                 }
             }
         }

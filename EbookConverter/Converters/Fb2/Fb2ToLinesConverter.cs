@@ -133,7 +133,7 @@ namespace EbookConverter.Converters.Fb2 {
 
         private static void AddTitle(TitleItem titleItem, List<ILine> lines, string id, int level) {
             if (titleItem != null) {
-                lines.AddRange(titleItem.TitleData.Select(title => title.ToHeaderLine(id, level)));
+                lines.AddRange(titleItem.TitleData.Select(title => title.ToString().ToHeaderLine(id, level)));
             }
         }
     }

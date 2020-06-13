@@ -9,6 +9,14 @@ namespace EbookConverter.Converters.Epub {
     public class EpubConverter : ConverterBase {
         public EpubConverter(WkhtmltopdfConfig wkhtmltopdfConfig) : base(".epub", wkhtmltopdfConfig) { }
         
+        /// <summary>
+        /// Конвертация файла из epub в pdf
+        /// </summary>
+        /// <param name="temp">Путь к временной папке для хранения промежуточных данных. После выхода из функции папка будет удалена</param>
+        /// <param name="source">Путь к файлу</param>
+        /// <param name="destination">Путь к сконверченному файлу</param>
+        /// <param name="wkArgs">Аргументы для запуска wkhtmltopdf</param>
+        /// <returns></returns>
         protected override bool ConvertInternal(string temp, string source, string destination, string wkArgs) {
             ZipFile.ExtractToDirectory(source, temp, true);
             var readBook = EpubReader.ReadBook(source);
@@ -21,11 +29,7 @@ namespace EbookConverter.Converters.Epub {
                 .Where(t => !string.Equals(Path.GetFileName(t.FileName), "TOC.xhtml", StringComparison.InvariantCultureIgnoreCase))
                 .Select(t => Path.Combine(temp, readBook.Schema.ContentDirectoryPath, t.FileName)).ToList();
 
-            if (parts.Count == 0) {
-                return false;
-            }
-
-            return GeneratePdf(parts[0], parts.Skip(1).ToList(), destination, wkArgs);
+            return parts.Count != 0 && GeneratePdf(parts[0], parts.Skip(1).ToList(), destination, wkArgs);
         }
     }
 }

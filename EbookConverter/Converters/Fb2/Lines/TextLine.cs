@@ -1,6 +1,9 @@
 using EbookConverter.Extensions;
 
 namespace EbookConverter.Converters.Fb2.Lines {
+    /// <summary>
+    /// Абзац
+    /// </summary>
     public class TextLine : ILine {
         public string Text;
         
