@@ -1,4 +1,5 @@
 using System;
+using System.Text;
 using EbookConverter.Converters.Fb2.Lines;
 using EbookConverter.Extensions;
 using FB2Library.Elements;
@@ -28,7 +29,7 @@ namespace EbookConverter.Converters.Fb2 {
 
         private static string ToHtml(this InlineImageItem image) {
             var key = image.HRef.Replace("#", string.Empty);
-            return HtmlExtensions.SelfCloseHtmlTag("img", "alt", key, "src", key);
+            return HtmlExtensions.SelfCloseHtmlTag("img", "alt", key, "src", key, "type", "inline");
         }
 
         private static string ToHtml(this InternalLinkItem link) {
@@ -39,24 +40,35 @@ namespace EbookConverter.Converters.Fb2 {
                     .ToHtmlTag("sup");
             }
 
-            return link.LinkText.ToHtml().ToHtmlTag("a", "href", link.HRef, "type", link.Type);
+            return link.LinkText
+                .ToHtml()
+                .ToHtmlTag("a", "href", link.HRef, "type", link.Type);
         }
         
         public static string ToHtml(this SimpleText text) {
             if (!text.HasChildren) {
                 return ToHtml(text.Style, text.Text);
             }
-
+            
+            var sb = new StringBuilder();
             foreach (var child in text.Children) {
-                return child switch {
-                    SimpleText simple => ToHtml(simple.Style, simple.ToHtml()),
-                    InternalLinkItem link => ToHtml(text.Style, link.ToHtml()),
-                    InlineImageItem image => ToHtml(text.Style, image.ToHtml()),
-                    _ => ToHtml(text.Style, child.ToString())
-                };
+                switch (child) {
+                    case SimpleText simple:
+                        sb.Append(simple.ToHtml());
+                        break;
+                    case InternalLinkItem link:
+                        sb.Append(link.ToHtml());
+                        break;
+                    case InlineImageItem image:
+                        sb.Append(image.ToHtml());
+                        break;
+                    default:
+                        sb.Append(ToHtml(text.Style, child.ToString()));
+                        break;
+                }
             }
 
-            return string.Empty;
+            return ToHtml(text.Style, sb.ToString());
         }
 
         private static string ToHtml(TextStyles style, string str) {
