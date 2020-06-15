@@ -17,6 +17,7 @@ namespace EbookConverter.IoC {
 
             Bind<HtmlPatternsConfig>().ToConstant(htmlPatternsConfig.HtmlPatternsConfig);
             Bind<WkhtmltopdfConfig>().ToConstant(htmlPatternsConfig.WkhtmltopdfConfig);
+            Bind<ProcessorConfig>().ToConstant(htmlPatternsConfig.ProcessorConfig);
             
             Bind<IFB2Reader>().To<FB2Reader>();
             Bind<ConverterBase>().To<EpubConverter>();

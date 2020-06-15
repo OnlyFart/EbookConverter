@@ -3,14 +3,21 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using EbookConverter.Configs;
 using EbookConverter.Converters;
 
 namespace EbookConverter.Logic {
     public class Processor {
         private readonly List<ConverterBase> _converters;
+        private readonly ProcessorConfig _processorConfig;
 
-        public Processor(List<ConverterBase> converters) {
+        public Processor(List<ConverterBase> converters, ProcessorConfig processorConfig) {
+            if (processorConfig.MaxParallelThreads <= 0) {
+                throw new ArgumentOutOfRangeException(nameof(processorConfig.MaxParallelThreads));
+            }
+            
             _converters = converters;
+            _processorConfig = processorConfig;
         }
         
         /// <summary>
@@ -51,7 +58,7 @@ namespace EbookConverter.Logic {
                 Directory.CreateDirectory(destination);
             }
             
-            Parallel.ForEach(Directory.GetFiles(source, pattern, SearchOption.AllDirectories), new ParallelOptions{ MaxDegreeOfParallelism = 10 }, file => {
+            Parallel.ForEach(Directory.GetFiles(source, pattern, SearchOption.AllDirectories), new ParallelOptions{ MaxDegreeOfParallelism = _processorConfig.MaxParallelThreads }, file => {
                 ProcessFile(file, Path.Combine(destination, Path.GetFileNameWithoutExtension(file) + ".pdf"), wkArgs);
             });
         }

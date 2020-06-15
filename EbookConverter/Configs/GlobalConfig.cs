@@ -12,5 +12,10 @@ namespace EbookConverter.Configs {
         /// Конфиг для утилиты wkhtmltopdf
         /// </summary>
         public WkhtmltopdfConfig WkhtmltopdfConfig { get; set; }
+        
+        /// <summary>
+        /// Конфиг для процессора
+        /// </summary>
+        public ProcessorConfig ProcessorConfig { get; set; }
     }
 }
