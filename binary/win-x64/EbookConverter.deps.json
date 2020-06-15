@@ -15,6 +15,7 @@
           "Microsoft.Extensions.Configuration.Binder": "3.1.4",
           "Microsoft.Extensions.Configuration.Json": "3.1.4",
           "Ninject": "3.3.4",
+          "TempFolder": "1.0.0",
           "VersOne.Epub": "3.0.3.1"
         },
         "runtime": {
@@ -1009,6 +1010,14 @@
           "System.Xml.ReaderWriter": "4.3.0"
         }
       },
+      "TempFolder/1.0.0": {
+        "runtime": {
+          "lib/netcoreapp1.0/TempFolder.dll": {
+            "assemblyVersion": "1.0.0.0",
+            "fileVersion": "1.0.0.0"
+          }
+        }
+      },
       "VersOne.Epub/3.0.3.1": {
         "dependencies": {
           "System.IO.Compression": "4.3.0"
@@ -1832,6 +1841,13 @@
       "sha512": "sha512-5zJ0XDxAIg8iy+t4aMnQAu0MqVbqyvfoUVl1yDV61xdo3Vth45oA2FoY4pPkxYAH5f8ixpmTqXeEIya95x0aCQ==",
       "path": "system.xml.xdocument/4.3.0",
       "hashPath": "system.xml.xdocument.4.3.0.nupkg.sha512"
+    },
+    "TempFolder/1.0.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-2QXLpMUTCWv6YqOcgAJdpZs5Vvyvcgf2WdZfDRoIZfsGvJOWbXVvTyawCVsNKuHrQ1LNRjjvVJIwHc8++uOBVA==",
+      "path": "tempfolder/1.0.0",
+      "hashPath": "tempfolder.1.0.0.nupkg.sha512"
     },
     "VersOne.Epub/3.0.3.1": {
       "type": "package",
