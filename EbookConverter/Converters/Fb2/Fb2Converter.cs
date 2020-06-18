@@ -44,7 +44,7 @@ namespace EbookConverter.Converters.Fb2 {
         }
         
         /// <summary>
-        /// Сохрание все картинок на диск
+        /// Сохранение все картинок на диск
         /// </summary>
         /// <param name="file"></param>
         /// <param name="temp"></param>
