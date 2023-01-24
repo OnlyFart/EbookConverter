@@ -3,7 +3,7 @@ using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using EbookConverter.Configs;
-using VersOne.Epub;
+using EpubSharp;
 
 namespace EbookConverter.Converters.Epub {
     public class EpubConverter : ConverterBase {
@@ -19,15 +19,15 @@ namespace EbookConverter.Converters.Epub {
         /// <returns></returns>
         protected override bool ConvertInternal(string temp, string source, string destination, string wkArgs) {
             ZipFile.ExtractToDirectory(source, temp, true);
-            var readBook = EpubReader.ReadBook(source);
+            var readBook = EpubReader.Read(source);
             
-            if (readBook.ReadingOrder.Count == 0) {
+            if (readBook.TableOfContents.Count == 0) {
                 throw new Exception("No pages for convert");
             }
             
-            var parts = readBook.ReadingOrder
-                .Where(t => !string.Equals(Path.GetFileName(t.FileName), "TOC.xhtml", StringComparison.InvariantCultureIgnoreCase))
-                .Select(t => Path.Combine(temp, readBook.Schema.ContentDirectoryPath, t.FileName)).ToList();
+            var parts = readBook.TableOfContents
+                .Where(t => !string.Equals(Path.GetFileName(t.AbsolutePath), "TOC.xhtml", StringComparison.InvariantCultureIgnoreCase))
+                .Select(t => Path.Combine(temp, t.AbsolutePath)).ToList();
 
             return parts.Count != 0 && GeneratePdf(parts[0], parts.Skip(1).ToList(), destination, wkArgs);
         }
