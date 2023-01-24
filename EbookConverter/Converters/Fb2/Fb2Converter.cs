@@ -23,7 +23,7 @@ namespace EbookConverter.Converters.Fb2 {
         private string CreateCover(FB2File file, string temp) {
             var coverImagePath = string.Empty;
             
-            var coverImage = file.TitleInfo.Cover.CoverpageImages.FirstOrDefault();
+            var coverImage = file.TitleInfo.Cover?.CoverpageImages.FirstOrDefault();
             if (coverImage != null) {
                 coverImagePath = coverImage.HRef.Replace("#", string.Empty);
             }

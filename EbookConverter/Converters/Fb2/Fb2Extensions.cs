@@ -66,16 +66,23 @@ namespace EbookConverter.Converters.Fb2 {
         /// <param name="link">Встроенная ссылка</param>
         /// <returns></returns>
         private static string ToHtml(this InternalLinkItem link) {
+            var text = new StringBuilder();
+
+            foreach (var item in link.LinkData) {
+                text.Append(item);
+                text.Append(' ');
+            }
+
             // Для ссылок являющихся пояснением используется немного другая логика
             if (link.Type == "note") {
-                return link.LinkText
-                    .ToHtml()
+                return text
+                    .ToString()
                     .ToHtmlTag("a", "href", link.HRef, "type", link.Type, "id", link.HRef.Trim('#') + "_backlink")
                     .ToHtmlTag("sup");
             }
 
-            return link.LinkText
-                .ToHtml()
+            return text
+                .ToString()
                 .ToHtmlTag("a", "href", link.HRef, "type", link.Type);
         }
         

@@ -47,9 +47,8 @@ namespace EbookConverter.Converters {
         /// <param name="wkArgs">Аргументы для запуска wkhtmltopdf</param>
         /// <returns></returns>
         public bool Convert(string source, string destination, string wkArgs) {
-            using (var temp = TempFolderFactory.Create()) {
-                return ConvertInternal(temp.Path, source, destination, wkArgs);
-            }
+            using var temp = TempFolderFactory.Create();
+            return ConvertInternal(temp.Path, source, destination, wkArgs);
         }
 
         /// <summary>
@@ -96,14 +95,13 @@ namespace EbookConverter.Converters {
                 Arguments = arguments
             };
 
-            using (var process = Process.Start(info)) {
-                if (process == null) {
-                    throw new Exception("Fail to start wkhtmltopdf process");
-                }
-
-                process.WaitForExit();
-                return process.ExitCode == 0;
+            using var process = Process.Start(info);
+            if (process == null) {
+                throw new Exception("Fail to start wkhtmltopdf process");
             }
+
+            process.WaitForExit();
+            return process.ExitCode == 0;
         }
     }
 }

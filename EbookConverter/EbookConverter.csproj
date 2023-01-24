@@ -1,14 +1,12 @@
 <Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
         <OutputType>Exe</OutputType>
-        <TargetFramework>netcoreapp3.1</TargetFramework>
-        <RuntimeFrameworkVersion>3.0.0</RuntimeFrameworkVersion>
-        <RuntimeIdentifiers>win10-x64;linux-x64;</RuntimeIdentifiers>
+        <TargetFramework>net7.0</TargetFramework>
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="CommandLineParser" Version="2.8.0" />
-      <PackageReference Include="FB2Library" Version="1.3.0" />
+      <PackageReference Include="CommandLineParser" Version="2.9.1" />
+      <PackageReference Include="FB2Library" Version="1.3.2" />
       <PackageReference Include="Microsoft.Extensions.Configuration" Version="3.1.4" />
       <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="3.1.4" />
       <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="3.1.4" />
