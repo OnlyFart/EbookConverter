@@ -6,12 +6,12 @@ using Ninject;
 
 namespace EbookConverter {
     public class Program {
-        private static readonly StandardKernel _kernel = new StandardKernel(new EpubConverterNinject());
+        private static readonly StandardKernel Kernel = new(new EpubConverterNinject());
 
         private static void Main(string[] args) {
             Parser.Default.ParseArguments<Options>(args)
-                .WithParsed(options => _kernel.Get<Processor>().ProcessDirectory(options.Source, options.Destination, options.Pattern, options.Wk))
-                .WithNotParsed(options => {});
+                .WithParsed(options => Kernel.Get<Processor>().ProcessDirectory(options.Source, options.Destination, options.Pattern, options.Wk))
+                .WithNotParsed(_ => {});
         }
     }
 }

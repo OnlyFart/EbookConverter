@@ -7,8 +7,8 @@ namespace EbookConverter.Converters.Fb2.Lines {
     /// Пояснение
     /// </summary>
     public class NoteLine : ILine {
-        public readonly List<ILine> Texts  = new List<ILine>();
-        public readonly List<ILine> Titles = new List<ILine>();
+        public readonly List<ILine> Texts  = new();
+        public readonly List<ILine> Titles = new();
         public string Id;
         
         public string ToHtml() {

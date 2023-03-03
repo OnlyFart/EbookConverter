@@ -7,8 +7,8 @@ namespace EbookConverter.Converters.Fb2.Lines {
     /// Эпиграф
     /// </summary>
     public class Epigraph : ILine {
-        public readonly List<ILine> Texts = new List<ILine>();
-        public readonly List<ILine> Authors  = new List<ILine>();
+        public readonly List<ILine> Texts = new();
+        public readonly List<ILine> Authors  = new();
 
         public string ToHtml() {
             var sb = new StringBuilder();
