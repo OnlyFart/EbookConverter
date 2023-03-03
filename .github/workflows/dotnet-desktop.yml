@@ -1,0 +1,214 @@
+name: .NET
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build:
+    strategy:
+        matrix:
+          os: [ubuntu-latest, macos-latest, windows-latest]
+          
+    runs-on: ${{ matrix.os }}
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: 7.0.x
+    - name: Restore dependencies
+      run: dotnet restore
+    - name: Build
+      run: dotnet build --no-restore -c release
+    - name: Test
+      run: dotnet test --no-build --verbosity normal
+    - name: Small
+      run: >
+        dotnet publish -c release -p:PublishDir=../dist/small --no-self-contained 
+        -p:PublishSingleFile=true -p:DebugType=embedded -p:PublishTrimmed=false 
+        -p:EnableCompressionInSingleFile=false --use-current-runtime
+    - name: Portable
+      run: >
+        dotnet publish -c release -p:PublishDir=../dist/portable --self-contained 
+        -p:PublishSingleFile=true -p:DebugType=embedded -p:PublishTrimmed=true -p:TrimMode=partial
+        -p:EnableCompressionInSingleFile=true --use-current-runtime
+    - uses: actions/upload-artifact@v3
+      with:
+        name: EbookConverter-${{ matrix.os }}
+        path: ${{ github.workspace }}/dist/small
+
+    - uses: actions/upload-artifact@v3
+      with:
+        name: EbookConverter-${{ matrix.os }}-portable
+        path: ${{ github.workspace }}/dist/portable
+    
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v2
+      
+      - uses: kzrnm/get-net-sdk-project-versions-action@v1
+        id: get-version
+        with:
+          proj-path: EbookConverter/EbookConverter.csproj
+          
+      - name: "get-last-release"
+        id: last_release
+        uses: InsonusK/get-latest-release@v1.0.1
+        with:
+          myToken: ${{ github.token }}
+          
+      - name: release
+        if: ${{ steps.last_release.outputs.tag_name != steps.get-version.outputs.version }}
+        uses: actions/create-release@v1
+        id: create_release
+        with:
+          draft: false
+          prerelease: false
+          release_name: ${{steps.get-version.outputs.version}}
+          tag_name: ${{steps.get-version.outputs.version}}
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+         
+      - name: download-artifact-ubuntu
+        if: ${{ steps.last_release.outputs.tag_name != steps.get-version.outputs.version }}
+        uses: actions/download-artifact@v3
+        with:
+          name: EbookConverter-ubuntu-latest
+          path: ${{ github.workspace }}/linux
+      - name: download-artifact-ubuntu-portable
+        if: ${{ steps.last_release.outputs.tag_name != steps.get-version.outputs.version }}
+        uses: actions/download-artifact@v3
+        with:
+          name: EbookConverter-ubuntu-latest-portable
+          path: ${{ github.workspace }}/linux-portable      
+          
+      - name: download-artifact-windows
+        if: ${{ steps.last_release.outputs.tag_name != steps.get-version.outputs.version }}
+        uses: actions/download-artifact@v3
+        with:
+          name: EbookConverter-windows-latest
+          path: ${{ github.workspace }}/windows
+      - name: download-artifact-windows-portable
+        if: ${{ steps.last_release.outputs.tag_name != steps.get-version.outputs.version }}
+        uses: actions/download-artifact@v3
+        with:
+          name: EbookConverter-windows-latest-portable
+          path: ${{ github.workspace }}/windows-portable
+          
+      - name: download-artifact-macos
+        if: ${{ steps.last_release.outputs.tag_name != steps.get-version.outputs.version }}
+        uses: actions/download-artifact@v3
+        with:
+          name: EbookConverter-macos-latest
+          path: ${{ github.workspace }}/macos
+      - name: download-artifact-macos-portable
+        if: ${{ steps.last_release.outputs.tag_name != steps.get-version.outputs.version }}
+        uses: actions/download-artifact@v3
+        with:
+          name: EbookConverter-macos-latest-portable
+          path: ${{ github.workspace }}/macos-portable
+                  
+      - name: Install zip
+        if: ${{ steps.last_release.outputs.tag_name != steps.get-version.outputs.version }}
+        uses: montudor/action-zip@v0.1.0
+        
+      - name: Zip output
+        if: ${{ steps.last_release.outputs.tag_name != steps.get-version.outputs.version }}
+        run: zip -qq -x "*.pdb" -r ../EbookConverter-Linux.zip .
+        working-directory: ${{ github.workspace }}/linux
+      - name: Zip output
+        if: ${{ steps.last_release.outputs.tag_name != steps.get-version.outputs.version }}
+        run: zip -qq -x "*.pdb" -r ../EbookConverter-Linux-portable.zip .
+        working-directory: ${{ github.workspace }}/linux-portable
+          
+      - name: Zip output
+        if: ${{ steps.last_release.outputs.tag_name != steps.get-version.outputs.version }}
+        run: zip -qq -x "*.pdb" -r ../EbookConverter-Windows.zip .
+        working-directory: ${{ github.workspace }}/windows          
+      - name: Zip output
+        if: ${{ steps.last_release.outputs.tag_name != steps.get-version.outputs.version }}
+        run: zip -qq -x "*.pdb" -r ../EbookConverter-Windows-portable.zip .
+        working-directory: ${{ github.workspace }}/windows-portable
+        
+      - name: Zip output
+        if: ${{ steps.last_release.outputs.tag_name != steps.get-version.outputs.version }}
+        run: zip -qq -x "*.pdb" -r ../EbookConverter-Macos.zip .
+        working-directory: ${{ github.workspace }}/macos
+                 
+      - name: Zip output
+        if: ${{ steps.last_release.outputs.tag_name != steps.get-version.outputs.version }}
+        run: zip -qq -x "*.pdb" -r ../EbookConverter-Macos-portable.zip .
+        working-directory: ${{ github.workspace }}/macos-portable
+                 
+      - name: upload linux artifact
+        if: ${{ steps.last_release.outputs.tag_name != steps.get-version.outputs.version }}
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: EbookConverter-Linux.zip
+          asset_name: EbookConverter-Linux.zip
+          asset_content_type: application/zip
+                 
+      - name: upload windows artifact
+        if: ${{ steps.last_release.outputs.tag_name != steps.get-version.outputs.version }}
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: EbookConverter-Windows.zip
+          asset_name: EbookConverter-Windows.zip
+          asset_content_type: application/zip
+          
+      - name: upload macos artifact
+        if: ${{ steps.last_release.outputs.tag_name != steps.get-version.outputs.version }}
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: EbookConverter-Macos.zip
+          asset_name: EbookConverter-Macos.zip
+          asset_content_type: application/zip
+
+      - name: upload linux artifact portable
+        if: ${{ steps.last_release.outputs.tag_name != steps.get-version.outputs.version }}
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: EbookConverter-Linux-portable.zip
+          asset_name: EbookConverter-Linux-portable.zip
+          asset_content_type: application/zip
+
+      - name: upload windows artifact portable
+        if: ${{ steps.last_release.outputs.tag_name != steps.get-version.outputs.version }}
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: EbookConverter-Windows-portable.zip
+          asset_name: EbookConverter-Windows-portable.zip
+          asset_content_type: application/zip
+
+      - name: upload macos artifact portable
+        if: ${{ steps.last_release.outputs.tag_name != steps.get-version.outputs.version }}
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: EbookConverter-Macos-portable.zip
+          asset_name: EbookConverter-Macos-portable.zip
+          asset_content_type: application/zip
