@@ -2,7 +2,6 @@
 Инструмент для конвертации fb2 и epub файлов в pdf
 
 ## Для работы необходимо 
-* [Net.core 3.1](https://dotnet.microsoft.com/download/dotnet-core/3.1)
 * [Wkhtmltopdf](https://wkhtmltopdf.org/downloads.html#stable)
 
 ## Пример вызова сервиса
