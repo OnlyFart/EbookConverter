@@ -1,6 +1,7 @@
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 using EbookConverter.Configs;
 using FB2Library;
 
@@ -20,7 +21,7 @@ namespace EbookConverter.Converters.Fb2 {
         /// <param name="file">Файл fb2</param>
         /// <param name="temp">Директория для сохранения</param>
         /// <returns></returns>
-        private string CreateCover(FB2File file, string temp) {
+        private async Task<string> CreateCover(FB2File file, string temp) {
             var coverImagePath = string.Empty;
             
             var coverImage = file.TitleInfo.Cover?.CoverpageImages.FirstOrDefault();
@@ -38,7 +39,7 @@ namespace EbookConverter.Converters.Fb2 {
             }
 
             var covertPath = Path.Combine(temp, "cover.html");
-            File.WriteAllText(covertPath, File.ReadAllText(_htmlPatternsConfig.CoverPath).Replace("{cover}", coverImagePath), Encoding.UTF8);
+            await File.WriteAllTextAsync(covertPath, (await File.ReadAllTextAsync(_htmlPatternsConfig.CoverPath)).Replace("{cover}", coverImagePath), Encoding.UTF8);
             return covertPath;
 
         }
@@ -48,9 +49,9 @@ namespace EbookConverter.Converters.Fb2 {
         /// </summary>
         /// <param name="file"></param>
         /// <param name="temp"></param>
-        private static void SaveImages(FB2File file, string temp) {
+        private static async Task SaveImages(FB2File file, string temp) {
             foreach (var (key, value) in file.Images) {
-                File.WriteAllBytes(Path.Combine(temp, key), value.BinaryData);
+                await File.WriteAllBytesAsync(Path.Combine(temp, key), value.BinaryData);
             }
         }
         
@@ -60,15 +61,15 @@ namespace EbookConverter.Converters.Fb2 {
         /// <param name="file">Файл fb2</param>
         /// <param name="temp">Директория для сохранения</param>
         /// <returns></returns>
-        private string CreateContent(FB2File file, string temp) {
+        private async Task<string> CreateContent(FB2File file, string temp) {
             var sb = new StringBuilder();
             foreach (var line in Fb2ToLinesConverter.Convert(file)) {
                 sb.AppendLine(line.ToHtml());
             }
             
-            var pattern = File.ReadAllText(_htmlPatternsConfig.ContentPath).Replace("{title}", file.TitleInfo.BookTitle.ToString());
+            var pattern = (await File.ReadAllTextAsync(_htmlPatternsConfig.ContentPath)).Replace("{title}", file.TitleInfo.BookTitle.ToString());
             var contentPath = Path.Combine(temp, "content.html");
-            File.WriteAllText(contentPath, pattern.Replace("{content}", sb.ToString()), Encoding.UTF8);
+            await File.WriteAllTextAsync(contentPath, pattern.Replace("{content}", sb.ToString()), Encoding.UTF8);
 
             return contentPath;
         }
@@ -81,15 +82,15 @@ namespace EbookConverter.Converters.Fb2 {
         /// <param name="destination">Путь к сконверченному файлу</param>
         /// <param name="wkArgs">Аргументы для запуска wkhtmltopdf</param>
         /// <returns></returns>
-        protected override bool ConvertInternal(string temp, string source, string destination, string wkArgs) {
-            var file = _reader.ReadAsync(File.ReadAllText(source)).Result;
+        protected override async Task<bool> ConvertInternal(string temp, string source, string destination, string wkArgs) {
+            var file = await _reader.ReadAsync(await File.ReadAllTextAsync(source));
             
-            var coverPath = CreateCover(file, temp);
-            var contentPath = CreateContent(file, temp);
+            var coverPath = await CreateCover(file, temp);
+            var contentPath = await CreateContent(file, temp);
 
-            SaveImages(file, temp);
+            await SaveImages(file, temp);
 
-            return GeneratePdf(coverPath, contentPath, destination, wkArgs);
+            return await GeneratePdf(coverPath, contentPath, destination, wkArgs);
         }
     }
 }

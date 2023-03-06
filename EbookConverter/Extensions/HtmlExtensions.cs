@@ -11,7 +11,12 @@ namespace EbookConverter.Extensions {
         public static string ToHtmlTag(this string str, string tag, params string[] args) {
             var sb = new StringBuilder($"<{tag}");
             for (var i = 0; i < args.Length; i += 2) {
-                sb.AppendThroughWhitespace($"{args[i]}={args[i + 1].CoverQuotes()}");
+                var name = args[i];
+                var value = args[i + 1];
+
+                if (!string.IsNullOrWhiteSpace(name) && !string.IsNullOrWhiteSpace(value)) {
+                    sb.AppendThroughWhitespace($"{name}={value.CoverQuotes()}");
+                }
             }
 
             sb.Append($">{str}</{tag}>");

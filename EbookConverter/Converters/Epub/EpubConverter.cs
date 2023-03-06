@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
+using System.Threading.Tasks;
 using EbookConverter.Configs;
 using EpubSharp;
 
@@ -17,7 +18,7 @@ namespace EbookConverter.Converters.Epub {
         /// <param name="destination">Путь к сконверченному файлу</param>
         /// <param name="wkArgs">Аргументы для запуска wkhtmltopdf</param>
         /// <returns></returns>
-        protected override bool ConvertInternal(string temp, string source, string destination, string wkArgs) {
+        protected override async Task<bool> ConvertInternal(string temp, string source, string destination, string wkArgs) {
             ZipFile.ExtractToDirectory(source, temp, true);
             var readBook = EpubReader.Read(source);
             
@@ -29,7 +30,7 @@ namespace EbookConverter.Converters.Epub {
                 .Where(t => !string.Equals(Path.GetFileName(t.AbsolutePath), "TOC.xhtml", StringComparison.InvariantCultureIgnoreCase))
                 .Select(t => Path.Combine(temp, t.AbsolutePath)).ToList();
 
-            return parts.Count != 0 && GeneratePdf(parts[0], parts.Skip(1).ToList(), destination, wkArgs);
+            return parts.Count != 0 && await GeneratePdf(parts[0], parts.Skip(1).ToList(), destination, wkArgs);
         }
     }
 }

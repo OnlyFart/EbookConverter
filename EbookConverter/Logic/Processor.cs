@@ -26,17 +26,17 @@ namespace EbookConverter.Logic {
         /// <param name="source">Путь к файлу</param>
         /// <param name="destination">Путь к сконверченному файлу</param>
         /// <param name="wkArgs">Аргументы для запуска wkhtmltopdf</param>
-        private void ProcessFile(string source, string destination, string wkArgs) {
+        private async Task ProcessFile(string source, string destination, string wkArgs) {
             foreach (var converter in _converters.Where(converter => converter.IsSupport(source))) {
                 try {
                     Console.WriteLine($"Start convert {source} to {destination}");
-                    if (converter.Convert(source, destination, wkArgs)) {
+                    if (await converter.Convert(source, destination, wkArgs)) {
                         Console.WriteLine($"Success convert {source} to {destination}");
                     } else {
                         Console.WriteLine($"Fail convert {source} to {destination}");
                     }
                 } catch (Exception e) {
-                    Console.WriteLine($"Fail convert {source} to {destination}. Message {e.Message}");
+                    Console.WriteLine($"Fail convert {source} to {destination}. Message {e.ToString()}");
                 }
             }
         }
@@ -48,7 +48,7 @@ namespace EbookConverter.Logic {
         /// <param name="destination">Путь к реузльтирующей директории</param>
         /// <param name="pattern">Шаблон для поска файлов в <see cref="source"/></param>
         /// <param name="wkArgs">Аргументы для запуска wkhtmltopdf</param>
-        public void ProcessDirectory(string source, string destination, string pattern, string wkArgs) {
+        public async Task ProcessDirectory(string source, string destination, string pattern, string wkArgs) {
             if (!Directory.Exists(source)) {
                 Console.WriteLine($"Not found source directory {source}");
                 return;
@@ -58,8 +58,8 @@ namespace EbookConverter.Logic {
                 Directory.CreateDirectory(destination);
             }
             
-            Parallel.ForEach(Directory.GetFiles(source, pattern, SearchOption.AllDirectories), new ParallelOptions{ MaxDegreeOfParallelism = _processorConfig.MaxParallelThreads }, file => {
-                ProcessFile(file, Path.Combine(destination, Path.GetFileNameWithoutExtension(file) + ".pdf"), wkArgs);
+            await Parallel.ForEachAsync(Directory.GetFiles(source, pattern, SearchOption.AllDirectories), new ParallelOptions{ MaxDegreeOfParallelism = _processorConfig.MaxParallelThreads }, async (file, _) => {
+                await ProcessFile(file, Path.Combine(destination, Path.GetFileNameWithoutExtension(file) + ".pdf"), wkArgs);
             });
         }
     }

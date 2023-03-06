@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using EbookConverter.Configs;
 using EbookConverter.Extensions;
 using TempFolder;
@@ -37,7 +38,7 @@ namespace EbookConverter.Converters {
         /// <param name="destination">Путь к сконверченному файлу</param>
         /// <param name="wkArgs">Аргументы для запуска wkhtmltopdf</param>
         /// <returns></returns>
-        protected abstract bool ConvertInternal(string temp, string source, string destination, string wkArgs);
+        protected abstract Task<bool> ConvertInternal(string temp, string source, string destination, string wkArgs);
         
         /// <summary>
         /// Конвертация файла
@@ -46,9 +47,9 @@ namespace EbookConverter.Converters {
         /// <param name="destination">Путь к сконверченному файлу</param>
         /// <param name="wkArgs">Аргументы для запуска wkhtmltopdf</param>
         /// <returns></returns>
-        public bool Convert(string source, string destination, string wkArgs) {
-            using var temp = TempFolderFactory.Create();
-            return ConvertInternal(temp.Path, source, destination, wkArgs);
+        public async Task<bool> Convert(string source, string destination, string wkArgs) {
+            using var temp = TempFolderFactory.Create("temp");
+            return await ConvertInternal(temp.Path, source, destination, wkArgs);
         }
 
         /// <summary>
@@ -59,7 +60,7 @@ namespace EbookConverter.Converters {
         /// <param name="destination">Путь к сконверченному файлу</param>
         /// <param name="wkArgs">Аргументы для запуска wkhtmltopdf</param>
         /// <returns></returns>
-        protected bool GeneratePdf(string cover, string content, string destination, string wkArgs) {
+        protected Task<bool> GeneratePdf(string cover, string content, string destination, string wkArgs) {
             return GeneratePdf(cover, new List<string> {content}, destination, wkArgs);
         }
         
@@ -71,7 +72,7 @@ namespace EbookConverter.Converters {
         /// <param name="destination">Путь к сконверченному файлу</param>
         /// <param name="wkArgs">Аргументы для запуска wkhtmltopdf</param>
         /// <returns></returns>
-        protected bool GeneratePdf(string cover, List<string> contents, string destination, string wkArgs) {
+        protected async Task<bool> GeneratePdf(string cover, List<string> contents, string destination, string wkArgs) {
             if (contents.Count == 0 && string.IsNullOrWhiteSpace(cover)) {
                 throw new Exception("No pages for convert");
             }
@@ -99,8 +100,8 @@ namespace EbookConverter.Converters {
             if (process == null) {
                 throw new Exception("Fail to start wkhtmltopdf process");
             }
-
-            process.WaitForExit();
+            
+            await process.WaitForExitAsync();
             return process.ExitCode == 0;
         }
     }

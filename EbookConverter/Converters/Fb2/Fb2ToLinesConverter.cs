@@ -6,6 +6,7 @@ using EbookConverter.Converters.Fb2.Lines;
 using FB2Library;
 using FB2Library.Elements;
 using FB2Library.Elements.Poem;
+using FB2Library.Elements.Table;
 
 namespace EbookConverter.Converters.Fb2 {
     /// <summary>
@@ -94,8 +95,8 @@ namespace EbookConverter.Converters.Fb2 {
                     AddTitle(title, lines, string.Empty, headerLevel + 1);
                     break;
                 }
-                case SubTitleItem _:
-                case ParagraphItem _: {
+                case SubTitleItem:
+                case ParagraphItem: {
                     var sb = new StringBuilder();
                     foreach (var paragraphData in ((ParagraphItem)textItem).ParagraphData) {
                         sb.Append(paragraphData.ToHtml());
@@ -126,6 +127,22 @@ namespace EbookConverter.Converters.Fb2 {
                     lines.Add(epigraph);
                     return;
                 }
+                case TableItem tableItem:
+                    var table = new Table();
+
+                    foreach (var row in tableItem.Rows) {
+                        var tableRow = new TableRow();
+                        
+                        foreach (var cell in row.Cells) {
+                            tableRow.Cells.Add(cell);
+                        }
+                        
+                        table.Rows.Add(tableRow);
+                    }
+                    
+                    lines.Add(table);
+                    
+                    return;
                 default:
                     throw new Exception(textItem.GetType().ToString());
             }

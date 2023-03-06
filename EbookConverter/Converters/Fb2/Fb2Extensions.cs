@@ -1,8 +1,10 @@
 using System;
 using System.Text;
+using System.Web;
 using EbookConverter.Converters.Fb2.Lines;
 using EbookConverter.Extensions;
 using FB2Library.Elements;
+using FB2Library.Elements.Table;
 
 namespace EbookConverter.Converters.Fb2 {
     public static class Fb2Extensions {
@@ -94,7 +96,7 @@ namespace EbookConverter.Converters.Fb2 {
         public static string ToHtml(this SimpleText text) {
             // Если у объекта нет дочерних элементов, то сразу преобразуем его в html
             if (!text.HasChildren) {
-                return ToHtml(text.Style, text.Text);
+                return ToHtml(text.Style, HttpUtility.HtmlEncode(text.Text));
             }
             
             // При наличии дочерних объектов выполняется их рекурсивный обход
@@ -133,12 +135,38 @@ namespace EbookConverter.Converters.Fb2 {
                 TextStyles.Normal => str,
                 TextStyles.Strong => str.ToHtmlTag("strong"),
                 TextStyles.Emphasis => str.ToHtmlTag("i"),
-                TextStyles.Code => str.ToHtmlTag("pre"),
+                TextStyles.Code => str.ToHtmlTag("code"),
                 TextStyles.Sub => str.ToHtmlTag("sub"),
                 TextStyles.Sup => str.ToHtmlTag("sup"),
                 TextStyles.Strikethrough => str.ToHtmlTag("strike"),
                 _ => throw new ArgumentOutOfRangeException(nameof(style), style, null)
             };
+        }
+
+
+        public static string ToHtml(this ICellElement cell) {
+            var sb = new StringBuilder();
+            
+            switch (cell) {
+                case TableCellItem tableCellItem:
+                    foreach (var p in tableCellItem.ParagraphData) {
+                        sb.Append(p.ToHtml());
+                    }
+
+                    return sb.ToString().ToHtmlTag("td", "align",tableCellItem.Align.ToString(), "colspan", tableCellItem.ColSpan.ToString(), "valign", tableCellItem.VAlign.ToString());
+                case TableHeadingItem tableHeadingItem:
+                    foreach (var p in tableHeadingItem.ParagraphData) {
+                        sb.Append(p.ToHtml());
+                    }
+                    
+                    return sb.ToString().ToHtmlTag("th", "align", tableHeadingItem.Align.ToString(), "colspan", tableHeadingItem.ColSpan.ToString(), "valign", tableHeadingItem.VAlign.ToString());
+                case BaseCellElement baseCellElement:
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(cell));
+            }
+
+            return sb.ToString();
         }
     }
 }
