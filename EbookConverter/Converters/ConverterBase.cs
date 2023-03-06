@@ -48,7 +48,7 @@ namespace EbookConverter.Converters {
         /// <param name="wkArgs">Аргументы для запуска wkhtmltopdf</param>
         /// <returns></returns>
         public async Task<bool> Convert(string source, string destination, string wkArgs) {
-            using var temp = TempFolderFactory.Create("temp");
+            using var temp = TempFolderFactory.Create();
             return await ConvertInternal(temp.Path, source, destination, wkArgs);
         }
 
