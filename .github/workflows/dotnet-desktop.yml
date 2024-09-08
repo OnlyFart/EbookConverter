@@ -78,39 +78,39 @@ jobs:
          
       - name: download-artifact-ubuntu
         if: ${{ steps.last_release.outputs.tag_name != steps.get-version.outputs.version }}
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4.1.7
         with:
           name: EbookConverter-ubuntu-latest
           path: ${{ github.workspace }}/linux
       - name: download-artifact-ubuntu-portable
         if: ${{ steps.last_release.outputs.tag_name != steps.get-version.outputs.version }}
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4.1.7
         with:
           name: EbookConverter-ubuntu-latest-portable
           path: ${{ github.workspace }}/linux-portable      
           
       - name: download-artifact-windows
         if: ${{ steps.last_release.outputs.tag_name != steps.get-version.outputs.version }}
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4.1.7
         with:
           name: EbookConverter-windows-latest
           path: ${{ github.workspace }}/windows
       - name: download-artifact-windows-portable
         if: ${{ steps.last_release.outputs.tag_name != steps.get-version.outputs.version }}
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4.1.7
         with:
           name: EbookConverter-windows-latest-portable
           path: ${{ github.workspace }}/windows-portable
           
       - name: download-artifact-macos
         if: ${{ steps.last_release.outputs.tag_name != steps.get-version.outputs.version }}
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4.1.7
         with:
           name: EbookConverter-macos-latest
           path: ${{ github.workspace }}/macos
       - name: download-artifact-macos-portable
         if: ${{ steps.last_release.outputs.tag_name != steps.get-version.outputs.version }}
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4.1.7
         with:
           name: EbookConverter-macos-latest-portable
           path: ${{ github.workspace }}/macos-portable
